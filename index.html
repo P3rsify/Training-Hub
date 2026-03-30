@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Training Hub">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23111318'/><text x='90' y='125' font-size='96' text-anchor='middle'>🥋</text></svg>">
+  <meta name="theme-color" content="#111318">
+  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlRyYWluaW5nIEh1YiIsCiAgInNob3J0X25hbWUiOiAiVHJhaW5pbmciLAogICJkZXNjcmlwdGlvbiI6ICJTdHJlbmd0aCAmIFRLRCBNb2JpbGl0eSBUcmFpbmluZyBBcHAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzExMTMxOCIsCiAgInRoZW1lX2NvbG9yIjogIiMxMTEzMTgiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCw8c3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDE5MiAxOTInPjxyZWN0IHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyByeD0nNDAnIGZpbGw9JyUyMzExMTMxOCcvPjx0ZXh0IHg9Jzk2JyB5PScxMzAnIGZvbnQtc2l6ZT0nMTAwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJz7wn6WLPC90ZXh0Pjwvc3ZnPiIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+  <title>Training Hub 🥋</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #111318; }
+    body { -webkit-font-smoothing: antialiased; overscroll-behavior: none; color: #f0f0f5; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #111318; } ::-webkit-scrollbar-thumb { background: #2e3140; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    (function() {
+      var mem = {};
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.startsWith('tkdhub__')) mem[k.slice(8)] = localStorage.getItem(k);
+        }
+      } catch(e) {}
+      window.storage = {
+        get: function(key) { return Promise.resolve(mem[key] !== undefined ? { key: key, value: mem[key] } : null); },
+        set: function(key, value) { mem[key] = value; try { localStorage.setItem('tkdhub__' + key, value); } catch(e) {} return Promise.resolve({ key: key, value: value }); },
+        delete: function(key) { delete mem[key]; try { localStorage.removeItem('tkdhub__' + key); } catch(e) {} return Promise.resolve({ key: key, deleted: true }); },
+        list: function(prefix) { return Promise.resolve({ keys: Object.keys(mem).filter(function(k) { return !prefix || k.startsWith(prefix); }) }); }
+      };
+    })();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+
+// ─── FONTS ────────────────────────────────────────────────────────────────────
+
+// ─── DESIGN TOKENS — Dark / Charcoal & Amber ──────────────────────────────────
+const D = {
+  bg: "#111318", surface: "#1c1f27", surface2: "#232733",
+  border: "#2e3140", borderLight: "#383c50",
+  text: "#f0f0f5", muted: "#7a7f96", faint: "#2a2d3a",
+  mono: "'DM Mono', 'Courier New', monospace",
+  font: "'DM Sans', system-ui, sans-serif",
+  // Accent palette
+  amber: "#f59e0b", amberDim: "#92650a",
+  blue: "#3b82f6", blueDim: "#1d4ed8",
+  red: "#ef4444", redDim: "#b91c1c",
+  purple: "#a855f7", purpleDim: "#7e22ce",
+  teal: "#14b8a6", tealDim: "#0f766e",
+  // Phase colours
+  green: "#22c55e", orange: "#f59e0b", tkdRed: "#ef4444",
+  gold: "#f59e0b", cyan: "#06b6d4",
+};
+
+// ─── STRENGTH DATA — Upper/Lower Split ────────────────────────────────────────
+// Week A: Upper1 → Lower1 → Upper2   |   Week B: Lower2 → Upper1 → Lower1
+// Equipment: Barbell · Squat rack · Bench · Pull-up bar · Rings
+//            Bands · DBs (2.5/5/7.5kg) · KBs (4–12kg)
+const strengthPlan = {
+  phases: [
+    {
+      phase: "Phase 1", label: "Foundations", weeks: "Wks 1–4", color: D.amber,
+      goal: "Build technique on all main lifts. Moderate loads — stop 3 reps from failure. Form first.",
+      days: [
+        { day: "Upper 1", type: "Push Focus", exercises: [
+          { name: "Barbell Bench Press", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "30–40kg total. Feet flat, blades retracted, bar to lower chest.", muscles: "Chest · Shoulders · Triceps", cues: ["Eyes under the bar, grip just wider than shoulder-width", "Retract shoulder blades into the bench — stay pinched throughout", "Lower to lower chest over 2–3 seconds — light touch before pressing", "Press explosively, bar path angled slightly back toward rack", "Wrists straight, elbows at ~45° — not flared, not tucked"] },
+          { name: "DB Chest Fly", sets: 3, target: "12–15", rest: 90, notes: "5–7.5kg. Flat bench. Wide arc, fixed elbow bend. Pure chest stretch.", muscles: "Chest · Front delts", cues: ["Lie flat, dumbbells above chest, palms facing each other", "Soft fixed elbow bend throughout — don't let arms straighten", "Lower in a wide arc until you feel a deep chest stretch at bench level", "Squeeze chest to bring dumbbells back together at the top", "Think hugging a barrel — the arc is the movement, not a press"] },
+          { name: "Barbell Skull Crusher", sets: 3, target: "10–12", rest: 90, notes: "10–15kg total. Flat bench. Narrow grip, elbows fixed, lower to forehead.", muscles: "Triceps (long head emphasis)", cues: ["Grip bar narrow — hands ~20cm apart, arms above chest", "Elbows point to ceiling and stay fixed throughout", "Lower bar toward forehead by bending only at the elbows", "Stop just before touching, press back to full extension", "Upper arms completely still — only forearms move"] },
+          { name: "DB Shoulder Press", sets: 3, target: "10–12", rest: 90, notes: "7.5kg each. Full range — lower to ear height each rep.", muscles: "Shoulders · Triceps", cues: ["Dumbbells at shoulder height, palms forward", "Press overhead to full extension", "Lower slowly over 2–3 seconds to ear height", "Core braced — no arching the lower back", "Full range every rep — ear height at bottom, lockout at top"] },
+          { name: "DB Lateral Raise", sets: 3, target: "12–15", rest: 60, notes: "5kg. 2s up, 3s down. Side delts respond to slow eccentrics.", muscles: "Side deltoids", cues: ["Slight elbow bend, raise to shoulder height", "Lead with the back of your hands — not palms", "Lower over 3 full seconds", "5kg strict is harder than 7.5kg cheated — keep it strict", "This is your side delt foundation set"] },
+          { name: "Pull-Up / Band-Assisted", sets: 3, target: "5–8", rest: 90, restType: "heavy", notes: "Pull work on push day keeps weekly frequency high. Band if needed.", muscles: "Lats · Biceps · Rear delts", cues: ["Dead hang start — arms fully extended", "Pull elbows down and back — chest to the bar", "Chin clears the bar at the top", "Lower over 3 seconds — eccentric matters", "Use the thickest band that lets you hit 5 clean reps"] },
+          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Band at face height. Shoulder health maintenance on every upper day.", muscles: "Rear delts · Rotator cuff", cues: ["Anchor at face height, elbows high and wide", "Hands separate to ears — hold 1 second", "Light band, focus on the squeeze", "This is shoulder insurance — never skip it", "2 sets here, 2 on Upper 2 = 4 sets weekly minimum"] },
+        ]},
+        { day: "Upper 2", type: "Pull Focus", exercises: [
+          { name: "Barbell Bent-Over Row", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "Hinge to ~45°, overhand grip. Bar to lower chest. Hard squeeze at top.", muscles: "Lats · Rhomboids · Rear delts · Biceps", cues: ["Hinge until torso is ~45°, soft knees, core braced", "Overhand grip just outside shoulder-width", "Pull to lower chest — elbows drive back past torso", "Squeeze shoulder blades hard at the top of every rep", "2 seconds down, back flat throughout"] },
+          { name: "Barbell Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "40–50kg total. Bar over mid-foot, brace hard, drive the floor away.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Bar over mid-foot, hip-width stance, grip outside legs", "Shins near-vertical, back flat, shoulders over bar", "Big breath, brace core entirely before lifting", "Drive the floor away — think leg press not pull", "Hips and knees lock together at top — no hyperextension"] },
+          { name: "DB Reverse Fly", sets: 3, target: "12–15", rest: 60, notes: "5kg. Hinge forward, arms out to sides. Rear delts and upper back.", muscles: "Rear delts · Rhomboids · Traps", cues: ["Hinge at hips until torso is near-parallel to floor", "Hold dumbbells below chest, soft elbow bend", "Raise both arms out to the sides — squeeze shoulder blades together", "Lower slowly over 2–3 seconds", "This is the rear delt isolation — crucial for balanced shoulders"] },
+          { name: "Barbell Shrug", sets: 3, target: "10–12", rest: 60, notes: "Moderate load. Straight up — no rolling. Hold at top 1–2s.", muscles: "Traps · Upper back", cues: ["Hold barbell at hip height, overhand grip shoulder-width", "Shrug straight up toward your ears — no rolling forward or back", "Hold the top position for 1–2 seconds every rep", "Lower slowly — full stretch at the bottom", "Traps respond to heavy load and slow eccentrics — don't rush"] },
+          { name: "DB Bicep Curl", sets: 3, target: "10–12", rest: 60, notes: "7.5kg each. Strict — elbows pinned, 3s eccentric.", muscles: "Biceps · Brachialis", cues: ["Elbows pinned to sides throughout", "Curl to shoulders, hard squeeze at top", "Lower over 3 full seconds", "No swinging — drop to 5kg if form breaks", "Alternate arms if bilateral form breaks down"] },
+          { name: "Barbell Curl", sets: 3, target: "10–12", rest: 60, notes: "10–15kg total. Both hands supinated. Different stimulus to DB curl.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip just outside hip-width, palms up, elbows pinned", "Curl to shoulder height, hard squeeze at top", "Lower over 3 seconds", "Barbell locks both hands in supination throughout", "Second bicep exercise — push last 2 reps hard"] },
+          { name: "DB Chest Fly", sets: 2, target: "12–15", rest: 90, notes: "Chest on pull day spreads weekly volume. Same technique as Upper 1.", muscles: "Chest · Front delts", cues: ["Flat bench, same technique as Upper 1", "Wide arc, fixed elbow bend, deep stretch at bottom", "Squeeze chest to bring dumbbells back up", "Chest is fresher here than after bench — use that", "2 sets here + 3 on Upper 1 = 5 sets chest weekly"] },
+          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Shoulder health on every upper day.", muscles: "Rear delts · Rotator cuff", cues: ["Anchor at face height, pull to face with elbows high", "Hands separate to ears, hold 1 second at peak", "Focus on rear delt squeeze not arm pull", "Never skip on upper days", "Consistent volume here prevents most pressing injuries"] },
+        ]},
+        { day: "Lower 1", type: "Quad Focus", exercises: [
+          { name: "Barbell Back Squat", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "30–40kg total. Squat leads — legs fresh for the heaviest movement.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Bar on upper traps, feet shoulder-width, toes out 20–30°", "Big breath and brace before every rep", "Sit back and down — chest up, knees over toes", "Thighs parallel or below — full depth every rep", "Drive through whole foot, squeeze glutes at top"] },
+          { name: "Barbell Sumo Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "Posterior chain warm from squats. Wide stance, toes 45°, grip inside.", muscles: "Glutes · Inner thighs · Hamstrings · Back", cues: ["Wide stance outside hip-width, toes out 45°", "Grip bar inside legs, roughly shoulder-width", "Hips closer to bar than conventional — glute dominant", "Brace hard, push knees out over toes as you drive", "Bar drags up inner legs to lockout"] },
+          { name: "KB Romanian Deadlift", sets: 3, target: "10–12", rest: 90, notes: "12kg KBs. Hamstring isolation after the heavy compounds.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold KBs in front, feet hip-width, soft knees", "Hinge at hips — push them back as you lower bells", "Lower until strong hamstring stretch — back flat", "Drive hips forward, squeeze glutes hard at top", "Not a squat — depth from hip hinge not knee bend"] },
+          { name: "KB Bulgarian Split Squat", sets: 3, target: "8–10 each", rest: 90, notes: "12kg at chest. Rear foot on bench. Unilateral glute finisher.", muscles: "Quads · Glutes · Hamstrings", cues: ["KB by horns at chest, stand 2 feet from bench", "Rear foot on bench laces down", "Lower back knee toward floor, controlled descent", "Front shin roughly vertical — step forward if knee caves", "Drive through front heel, squeeze glute hard at top"] },
+          { name: "Standing Calf Raise", sets: 3, target: "15–20", rest: 60, notes: "Barbell on traps or hold DBs. Full range — stretch at bottom.", muscles: "Calves (gastrocnemius · soleus)", cues: ["Stand on a step or flat floor, barbell on traps or DBs at sides", "Lower heels as far as possible — full stretch at the bottom", "Rise onto toes as high as possible — squeeze at the top", "2 seconds up, 3 seconds down — slow eccentric", "Calves respond to high reps and full range — never partial reps"] },
+        ]},
+        { day: "Lower 2", type: "Posterior Focus", exercises: [
+          { name: "Barbell Conventional Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "Heavier pull emphasis. Full reset between reps.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Bar over mid-foot, hip-width stance, same setup as Upper 2", "Treat each rep as a max attempt — full reset at the floor", "Brace maximally, drive floor away", "Bar grazes shins and thighs on the way up", "Full lockout — hips and knees together"] },
+          { name: "Barbell Back Squat (volume)", sets: 4, target: "8–10", rest: 90, notes: "10% lighter than Lower 1. Volume work — more reps, same depth.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Slightly lighter than Lower 1 — this is volume, not max effort", "Pause 1 second at the bottom — eliminate bounce", "Drive knees out on the way up — more glute recruitment", "Consistent depth every rep — don't cut it as you fatigue", "4 sets of 8–10 is a powerful hypertrophy stimulus"] },
+          { name: "KB Romanian Deadlift", sets: 4, target: "12", rest: 90, notes: "12kg KBs. Extra set vs Lower 1. Pause at bottom.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two KBs, feet hip-width", "Hinge deep — pause 1 second at bottom, full hamstring stretch", "Drive hips through explosively on the way up", "Each rep is a fresh hinge — don't rush the setup", "Extra set this day drives hamstring hypertrophy"] },
+          { name: "KB Bulgarian Split Squat", sets: 3, target: "8–10 each", rest: 90, notes: "12kg at chest. Same as Lower 1 — hits legs twice weekly.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup as Lower 1 — rear foot on bench, KB at chest", "Control every rep — 2 seconds down", "Don't let front knee collapse — drive it over toes", "Squeeze glute hard at the top", "Hitting this twice weekly is what drives glute development"] },
+          { name: "Standing Calf Raise", sets: 3, target: "15–20", rest: 60, notes: "Same as Lower 1. Calves trained twice weekly for growth.", muscles: "Calves (gastrocnemius · soleus)", cues: ["Full range — maximum stretch at bottom, maximum squeeze at top", "3 seconds down every rep — slow eccentric is key", "Calves are notoriously stubborn — twice weekly volume helps", "Don't bounce at the bottom — control the stretch", "High reps here — 15–20 minimum for calf hypertrophy"] },
+        ]},
+      ]
+    },
+    {
+      phase: "Phase 2", label: "Hypertrophy", weeks: "Wks 5–10", color: D.orange,
+      goal: "More volume, more load. Train each set to 1–2 reps from failure. This is where muscle is built.",
+      days: [
+        { day: "Upper 1", type: "Push Focus", exercises: [
+          { name: "Barbell Bench Press (paused)", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Pause 1s on chest — eliminates stretch reflex.", muscles: "Chest · Shoulders · Triceps", cues: ["Same setup — blades pinched, feet flat, small arch", "Lower over 2–3 seconds, pause 1 full second on chest", "Paused reps force true muscle strength — no bouncing", "Press explosively out of the pause", "Safety pins — don't work this close to failure without them"] },
+          { name: "DB Chest Fly (3s eccentric)", sets: 3, target: "12–15", rest: 90, notes: "5–7.5kg. 3s lowering. Maximum chest stretch.", muscles: "Chest · Front delts", cues: ["Lower in wide arc over 3 full seconds — feel the chest stretching", "Hold 1 second at bottom before squeezing back up", "Fixed elbow bend throughout", "3s eccentric makes this one of the best chest isolation movements", "The stretch at the bottom is where chest hypertrophy happens"] },
+          { name: "Barbell Skull Crusher", sets: 3, target: "10–12", rest: 90, notes: "Add 2.5kg vs Phase 1. Same strict form.", muscles: "Triceps (long head emphasis)", cues: ["Narrow grip, elbows fixed to ceiling", "Lower to forehead over 2–3 seconds", "Press to full extension, hard squeeze at top", "Slightly heavier — add 2.5kg if Phase 1 felt easy", "Upper arms completely still"] },
+          { name: "DB Shoulder Press", sets: 3, target: "10–12", rest: 90, notes: "7.5kg. Volume maintained — more pressing volume elsewhere this phase.", muscles: "Shoulders · Triceps", cues: ["Full range — ear height at bottom, lockout at top", "More chest work before this — shoulders may fatigue faster", "Keep reps clean — no back arch to compensate", "2–3 second eccentric", "Maintain 7.5kg and add reps before adding weight"] },
+          { name: "DB Lateral Raise (3s eccentric)", sets: 4, target: "12–15", rest: 60, notes: "5kg. Extra set vs Phase 1. Volume drives side delt growth.", muscles: "Side deltoids", cues: ["One more set than Phase 1 — this extra volume is the growth driver", "2s raise, 3s lower — strict every rep", "By set 4 the shoulder should be burning", "Don't shrug or lean to compensate", "4 sets here + 3 on Upper 2 = 7 sets weekly"] },
+          { name: "Pull-Up (weighted)", sets: 3, target: "5–8", rest: 90, restType: "heavy", notes: "Add 4–6kg KB between feet if 8 unassisted is easy.", muscles: "Lats · Biceps · Rear delts", cues: ["Add weight if 8 unassisted feels comfortable", "Dead hang start, pull chest to bar", "3-second eccentric every rep", "Track reps — adding 1 per week is solid progress", "Pull-ups on push day keeps lats getting 2x weekly stimulus"] },
+          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Never skip. Shoulder health is cumulative.", muscles: "Rear delts · Rotator cuff", cues: ["Elbows high and wide, separate hands to ears", "1-second hold at peak", "Focus on rear delt not arm pull", "This phase has more bench — face pulls matter more", "2 sets per upper session = 4 weekly minimum"] },
+        ]},
+        { day: "Upper 2", type: "Pull Focus", exercises: [
+          { name: "Barbell Bent-Over Row (4s eccentric)", sets: 4, target: "8–10", rest: 90, notes: "Add 2.5–5kg vs Phase 1. Lower bar over 4 seconds.", muscles: "Lats · Rhomboids · Rear delts · Biceps", cues: ["Hinge to 45°, overhand, very tight brace", "Row to lower chest — 1-second squeeze at top", "Lower over 4 full seconds — eccentric overloads lats", "Back flat every rep — rounding under load risks injury", "Sets feel shorter than reps suggest — that's the eccentric working"] },
+          { name: "Barbell Deadlift", sets: 4, target: "5", rest: 120, restType: "heavy", notes: "Add 5kg vs Phase 1. Lower reps, heavier load.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Full reset between reps — no touch and go", "Treat every rep as near-max with the heavier load", "Bar stays in contact with legs the whole pull", "Brace more aggressively than Phase 1", "Hip and knee lockout together at top"] },
+          { name: "DB Reverse Fly (3s eccentric)", sets: 3, target: "12–15", rest: 60, notes: "5kg. 3s lowering. Rear delt volume increases this phase.", muscles: "Rear delts · Rhomboids · Traps", cues: ["Hinge until near-parallel, soft elbow bend", "Raise arms to sides, squeeze blades together at top", "Lower over 3 full seconds", "Extra set vs Phase 1 — rear delts need volume", "Keep hinge position consistent — torso shouldn't rise during the set"] },
+          { name: "Barbell Shrug", sets: 3, target: "10–12", rest: 60, notes: "Add load vs Phase 1. 2-second hold at top.", muscles: "Traps · Upper back", cues: ["Heavier than Phase 1 — add 5kg if Phase 1 felt comfortable", "Straight up shrug — no rolling", "Hold 2 seconds at top this phase", "Lower slowly — 3 seconds down", "Heavy shrugs with slow eccentrics are the best trap builder available"] },
+          { name: "DB Bicep Curl", sets: 3, target: "10–12", rest: 60, notes: "7.5kg. Elbows pinned, 3s eccentric.", muscles: "Biceps · Brachialis", cues: ["Elbows pinned, curl to shoulders, hard squeeze", "Lower over 3 full seconds", "No swinging — momentum kills the stimulus", "Alternate if bilateral breaks down", "Push last 2 reps hard — 1 from failure"] },
+          { name: "Barbell Curl (3s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "Add small load vs Phase 1. 3s eccentric.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip outside hip-width, palms up, elbows pinned", "Curl to shoulder height, hard squeeze at top", "Lower over 3 full seconds", "Locks both hands in supination — different stimulus to DBs", "Last set push to 1 from failure"] },
+          { name: "DB Chest Fly (3s eccentric)", sets: 2, target: "12–15", rest: 90, notes: "Chest on pull day. 3s eccentric this phase.", muscles: "Chest · Front delts", cues: ["Same technique — wide arc, fixed elbow bend", "3s lowering this phase, 1s hold at stretch", "Chest is fresh here — get a good stretch", "2 sets here + 3 on Upper 1 = 5 weekly chest sets", "Push last set close to failure"] },
+          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Heavy phase — shoulder health critical.", muscles: "Rear delts · Rotator cuff", cues: ["Full 15–20 reps — don't cut short", "Elbows high, hands separate to ears", "1-second peak hold", "Protecting shoulders from heavier bench and row loads", "Never skip on upper days"] },
+        ]},
+        { day: "Lower 1", type: "Quad Focus", exercises: [
+          { name: "Barbell Back Squat", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Higher reps = more hypertrophy stimulus.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Same setup — brace before every rep", "Pause 1 second at bottom — eliminate bounce, maximise depth", "Drive knees out hard on the way up", "Push every set to 1–2 reps from failure", "Higher reps mean more fatigue — stay tall throughout"] },
+          { name: "Barbell Sumo Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "Add 5kg vs Phase 1. Posterior chain warm from squats.", muscles: "Glutes · Inner thighs · Hamstrings · Back", cues: ["Wide stance, toes 45°, grip inside legs", "Heavier than Phase 1 — form must stay tight", "Push knees out aggressively over toes", "Bar drags up inner legs to lockout", "Brace harder than you think you need to"] },
+          { name: "KB Romanian Deadlift", sets: 4, target: "12", rest: 90, notes: "12kg KBs. Extra set vs Phase 1. Pause at bottom.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two KBs for more range and load", "Pause 1 second at bottom — full stretch", "Drive hips through explosively", "Each rep is a fresh hinge — don't rush", "Extra set this phase drives hamstring hypertrophy"] },
+          { name: "KB Bulgarian Split Squat", sets: 4, target: "10 each", rest: 90, notes: "12kg. More volume than Phase 1. Control every rep.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup — rear foot on bench, KB at chest", "Lower over 2–3 seconds controlled", "Don't let front knee collapse — drive out over toes", "Pause briefly at bottom before driving up", "By set 4 glutes and quads should be significantly fatigued"] },
+          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Extra set vs Phase 1. Full range every rep.", muscles: "Calves", cues: ["Maximum stretch at bottom, maximum squeeze at top", "3 seconds down — slow eccentric is key", "Don't bounce at the bottom", "4 sets total — calves need volume to grow", "Push last set to failure — calves are resilient"] },
+        ]},
+        { day: "Lower 2", type: "Posterior Focus", exercises: [
+          { name: "Barbell Conventional Deadlift", sets: 4, target: "5", rest: 120, restType: "heavy", notes: "Add 5kg vs Phase 1. Heavy pull emphasis.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Full reset between reps — no touch and go", "Heavier weight demands more aggressive brace", "Bar stays in contact with legs the whole pull", "Hip and knee lockout together at top", "Treat every rep as near-max"] },
+          { name: "Barbell Back Squat (volume)", sets: 5, target: "8", rest: 90, notes: "10% lighter than Lower 1. 5×8 is the core hypertrophy stimulus.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["10% less than Lower 1 — volume work, not max effort", "5 sets demands pacing — don't burn out on set 1", "Consistent depth every set — film yourself to check", "Full 2 minutes rest between sets", "Volume beats ego — reduce weight if form breaks on set 4–5"] },
+          { name: "KB Romanian Deadlift", sets: 4, target: "12", rest: 90, notes: "12kg KBs. Same as Lower 1 — hamstrings twice weekly.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two KBs, same hinge technique", "Pause 1 second at bottom every rep", "Drive explosively through the hips", "Hamstrings twice weekly is what drives posterior chain development", "Push the last set to 1 from failure"] },
+          { name: "KB Bulgarian Split Squat", sets: 4, target: "10 each", rest: 90, notes: "12kg. Hitting legs twice weekly — this is the growth driver.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup — rear foot on bench, KB at chest", "2–3 seconds down, controlled every rep", "Drive front knee out over toes throughout", "Twice-weekly split squats = significant glute and quad development", "By set 4 you should be deeply fatigued — that's the point"] },
+          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Calves twice weekly. Full range non-negotiable.", muscles: "Calves", cues: ["Full range — don't shortchange the stretch", "3 seconds down, pause at bottom", "Rise to full tippy-toe height at top", "4 sets twice weekly is sufficient calf volume", "Push to failure on the last set"] },
+        ]},
+      ]
+    },
+    {
+      phase: "Phase 3", label: "Strength", weeks: "Wks 11–16", color: D.red,
+      goal: "Heaviest loads of the programme. Lower reps on compounds. Push to 1 rep from failure on key sets.",
+      days: [
+        { day: "Upper 1", type: "Push Focus", exercises: [
+          { name: "Barbell Bench Press (paused)", sets: 5, target: "4–5", rest: 150, restType: "heavy", notes: "Heaviest bench. Pause every rep. Safety pins essential.", muscles: "Chest · Shoulders · Triceps", cues: ["Tightest setup yet — blades harder, more leg drive", "Pause every rep — 1 full second on chest", "Bar speed slow on heaviest sets — keep fighting", "Safety pins or spotter — mandatory at this load", "Technique must be perfect — this is your strength benchmark"] },
+          { name: "DB Chest Fly (4s eccentric)", sets: 3, target: "12–15", rest: 90, notes: "5–7.5kg. 4s lowering. Peak chest stretch stimulus.", muscles: "Chest · Front delts", cues: ["Lower in wide arc over 4 full seconds", "Hold the stretched position 1 second at bottom", "4s eccentric after heavy paused bench is extremely effective", "Squeeze chest hard to bring dumbbells back up", "Fixed elbow bend — arms don't straighten"] },
+          { name: "Barbell Skull Crusher (4s eccentric)", sets: 3, target: "8–10", rest: 90, notes: "Heaviest yet. 4s lowering. Peak tricep stimulus.", muscles: "Triceps (long head emphasis)", cues: ["Add 2.5kg vs Phase 2 if comfortable", "Lower toward forehead over 4 full seconds", "Elbows fixed — only forearms move", "Hard squeeze at full extension", "4s eccentric skull crushers are peak tricep overload"] },
+          { name: "DB Shoulder Press (4s eccentric)", sets: 3, target: "8–10", rest: 90, notes: "7.5kg. 4s lowering. Peak shoulder load.", muscles: "Shoulders · Triceps", cues: ["Press overhead, lower over 4 full seconds", "Elbows track down and slightly forward", "Brief pause at shoulder height before pressing", "4s eccentric turns 7.5kg into serious stimulus", "Core braced — no lower back arch at all"] },
+          { name: "DB Lateral Raise (4s eccentric)", sets: 4, target: "12–15", rest: 60, notes: "5kg. 4s down. Maximum side delt time under tension.", muscles: "Side deltoids", cues: ["2s raise, 4s lower — count every second", "At 4s eccentric, 5kg is genuinely hard by rep 10", "No shrugging or torso lean — strictly controlled", "Side delts respond to TUT more than load", "4 sets here + 3 on Upper 2 = 7 weekly sets"] },
+          { name: "Weighted Pull-Up", sets: 3, target: "4–6", rest: 120, restType: "heavy", notes: "6–10kg KB. Heaviest pull-up of the programme.", muscles: "Lats · Biceps · Rear delts", cues: ["Dead hang — no kipping, no momentum", "Add weight via KB between feet or belt", "Pull chest to bar — full range", "Lower over 3–4 seconds — weighted eccentrics build lat size", "Add 2kg when you hit top of rep range"] },
+          { name: "Band Face Pull", sets: 2, target: "20", rest: 60, notes: "Full 20 every set. Heavy pressing phase — protection critical.", muscles: "Rear delts · Rotator cuff", cues: ["Full 20 reps — don't cut short in Phase 3", "Elbows high, hands to ears", "Add an extra set if any shoulder discomfort this week", "Most pressing injuries are prevented here", "Consistency beats intensity on this one"] },
+        ]},
+        { day: "Upper 2", type: "Pull Focus", exercises: [
+          { name: "Barbell Bent-Over Row (4s eccentric)", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "Heaviest row. 4s eccentric. Hard squeeze at top.", muscles: "Lats · Rhomboids · Rear delts · Biceps", cues: ["Hinge to 45°, aggressive brace", "1-second hard squeeze at top", "Lower over 4 full seconds — brutal and effective", "Back flat — rounding under this load risks injury", "Sets feel shorter than reps suggest — that's the eccentric"] },
+          { name: "Barbell Deadlift", sets: 5, target: "3–4", rest: 150, restType: "heavy", notes: "Heaviest deadlift. Treat every rep as a max attempt.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Max brace — lats, abs, glutes before bar leaves floor", "First inch is hardest — be patient, keep driving", "Bar grazes legs the whole way up", "Squeeze glutes at lockout — don't hyperextend", "Full reset between reps at this weight"] },
+          { name: "DB Reverse Fly (4s eccentric)", sets: 4, target: "12–15", rest: 60, notes: "5kg. 4s lowering. Extra set vs Phase 2. Peak rear delt.", muscles: "Rear delts · Rhomboids · Traps", cues: ["Near-parallel hinge, raise arms to sides", "Squeeze blades hard at top", "Lower over 4 full seconds", "Extra set this phase — rear delts need accumulated volume", "By set 4 rear delts should be burning"] },
+          { name: "Barbell Shrug (4s eccentric)", sets: 4, target: "10–12", rest: 60, notes: "Heaviest shrug. 2s hold, 4s lowering.", muscles: "Traps · Upper back", cues: ["Heaviest shrug of programme — add 5kg vs Phase 2", "Shrug straight up, hold 2 seconds", "Lower over 4 full seconds — max trap stretch at bottom", "Extra set vs Phase 2 for peak trap hypertrophy", "Loaded stretches on the eccentric drive trap growth"] },
+          { name: "DB Bicep Curl (4s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "7.5kg. Explosive curl, 4s down. Maximum bicep stimulus.", muscles: "Biceps · Brachialis", cues: ["Curl explosively — strict, no swinging", "Hard squeeze at top before lowering", "Lower over 4 full seconds — elbows pinned", "By rep 8–10 biceps should be intensely fatigued", "4s eccentrics are the most effective arm growth technique"] },
+          { name: "Barbell Curl (4s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "Heavier than Phase 2. 4s down. Peak bicep stimulus.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip outside hip-width, palms up, elbows pinned", "Curl explosively, hard squeeze at top", "Lower over 4 full seconds — strict throughout", "Locks both hands in supination — maximises bicep tension", "Last set — biceps and forearms both deeply fatigued"] },
+          { name: "DB Chest Fly (4s eccentric)", sets: 2, target: "12–15", rest: 90, notes: "4s eccentric. Chest twice weekly maintains volume in strength phase.", muscles: "Chest · Front delts", cues: ["Wide arc, 4s lowering, 1s hold at stretch", "Same technique as Upper 1", "2 sets here + 3 on Upper 1 = 5 chest sets weekly in Phase 3", "Chest is fresh here — get a full deep stretch", "Go to failure on the last set"] },
+          { name: "Band Face Pull", sets: 2, target: "20", rest: 60, notes: "Full 20. Heaviest phase — shoulder protection most critical.", muscles: "Rear delts · Rotator cuff", cues: ["Full 20 reps every set — Phase 3 has heaviest loads", "Elbows high and wide", "This is the most important 10 minutes of shoulder work you do", "Add a set if any discomfort during the week", "Never skip in Phase 3"] },
+        ]},
+        { day: "Lower 1", type: "Quad Focus", exercises: [
+          { name: "Barbell Back Squat", sets: 5, target: "4–5", rest: 150, restType: "heavy", notes: "Heaviest squat. Add 5–10kg vs Phase 2. Full depth non-negotiable.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Set up meticulously — this is your heaviest squat", "Brace harder than you think necessary", "3 seconds down, no bouncing out of the hole", "Drive as if the floor is breaking apart", "Re-rack safely — step forward, don't reverse into pins"] },
+          { name: "Barbell Sumo Deadlift", sets: 5, target: "4–5", rest: 150, restType: "heavy", notes: "Heaviest sumo. Add 5–10kg vs Phase 2.", muscles: "Glutes · Inner thighs · Hamstrings · Back", cues: ["Wide stance, toes 45° — heavier but same technique", "Brace maximally before every rep", "Push knees aggressively out over toes", "Bar drags up inner legs — stay tight throughout", "Full reset between reps at this weight"] },
+          { name: "KB Romanian Deadlift (4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "12kg KBs. 4s lowering. Maximum hamstring TUT.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two 12kg KBs — maximum range and load", "Lower over 4 full seconds — every degree of stretch", "Pause 1–2 seconds at bottom", "Drive up explosively — hip snap, glute squeeze", "4s eccentric RDL is peak hamstring developer with this kit"] },
+          { name: "KB Bulgarian Split Squat (4s eccentric)", sets: 4, target: "8–10 each", rest: 120, restType: "heavy", notes: "12kg at chest. 4s lowering. Most demanding single-leg work.", muscles: "Quads · Glutes · Hamstrings", cues: ["Rear foot on bench, KB at chest", "Lower over 4 full seconds — complete control", "Pause at bottom before driving up explosively", "This will be the hardest single-leg work you've done", "Significant DOMS expected in glutes after first session at this tempo"] },
+          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Peak calf volume. Go to failure on last set.", muscles: "Calves", cues: ["Maximum range — deepest stretch, highest rise", "4 full seconds down — the eccentric builds calf size", "Don't bounce at the bottom", "Push last set to failure — calves are resilient", "Twice weekly at this volume = genuine calf development"] },
+        ]},
+        { day: "Lower 2", type: "Posterior Focus", exercises: [
+          { name: "Barbell Conventional Deadlift", sets: 5, target: "3–4", rest: 150, restType: "heavy", notes: "Heaviest conventional. Treat every rep as a max attempt.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Max brace — lats, abs, glutes all contracted before lifting", "First inch is hardest — drive through it", "Bar stays in contact with legs the whole way", "Full lockout — squeeze glutes, don't hyperextend", "This is peak posterior chain loading — take it seriously"] },
+          { name: "Barbell Back Squat (volume)", sets: 5, target: "6–8", rest: 90, notes: "10% lighter than Lower 1. Volume at heavier loads than Phase 2.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Still heavy but 10% below Lower 1 max", "Pause 1 second at bottom every rep", "Drive knees out on every rep — glute focus", "5 sets of 6–8 — push to 1 from failure", "Volume at this weight is what builds the legs"] },
+          { name: "KB Romanian Deadlift (4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "12kg KBs. 4s eccentric. Hamstrings twice weekly.", muscles: "Hamstrings · Glutes · Lower back", cues: ["4 full seconds down, 1–2 second pause at bottom", "Drive explosively up — hip snap", "Twice weekly at 4s eccentric = serious hamstring growth", "Each rep fresh — don't rush the hinge", "Push last set to 1 from failure"] },
+          { name: "KB Bulgarian Split Squat (4s eccentric)", sets: 4, target: "8–10 each", rest: 120, restType: "heavy", notes: "12kg. 4s lowering. Twice weekly for maximum development.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same 4s eccentric as Lower 1", "Pause at bottom — explosive drive up", "Twice weekly split squats at this tempo = peak glute and quad development", "By set 4 you should be unable to do another rep — that's the stimulus", "Track reps per set — any gain week on week is progress"] },
+          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Twice weekly. Push last set to failure.", muscles: "Calves", cues: ["Full range as always — stretch and squeeze", "4 seconds down on every rep", "Calves twice weekly at full range drives genuine growth", "Don't shortchange the bottom stretch", "Last set to failure — calves are built to take it"] },
+        ]},
+      ]
+    }
+  ]
+};
+
+// ─── MOBILITY DATA ────────────────────────────────────────────────────────────
+const mobilityPlan = {
+  sessions: [
+    {
+      id: "morning", label: "Morning Activation", tag: "Daily · 8 min", color: D.gold, icon: "🌅",
+      purpose: "Wake up the joints and prime the hips before training or your day. Done daily, this builds cumulative range over weeks.",
+      stretches: [
+        { name: "Hip Circle Rotations", hold: 30, sets: 1, side: false, notes: "Stand, hands on hips. Draw large slow circles — 10 clockwise, 10 anti. Lubricates the hip joint.", target: "Hip joint", cues: ["Stand with feet shoulder-width apart, hands on your hips", "Draw the largest circle you can with your pelvis — think hula-hoop", "Do 10 slow clockwise rotations, then 10 anti-clockwise", "Keep your upper body relatively still — the movement is all in the hips", "Gradually increase the size of the circles as the joints warm up"] },
+        { name: "Leg Swing (Front–Back)", hold: 20, sets: 1, side: true, notes: "Hold wall for balance. Swing leg forward and back, relaxed. Let momentum build gradually.", target: "Hip flexor / Hamstring", cues: ["Stand side-on to a wall, one hand resting on it for balance", "Keep the swinging leg relaxed — don't tense the hip", "Start with small swings and let the arc grow naturally with each swing", "Forward: aim for hip height. Backward: let the glute stretch guide you", "This is dynamic flexibility — speed and momentum are part of the drill"] },
+        { name: "Leg Swing (Side–Side)", hold: 20, sets: 1, side: true, notes: "Swing leg across body and out to side. Critical for roundhouse and side kick range.", target: "Adductors / Abductors", cues: ["Face the wall, both hands on it for support", "Swing the working leg across the body (adduction) then out to the side (abduction)", "Keep the standing leg straight and the pelvis level", "This directly mimics the hip motion of a roundhouse kick chamber", "Let the range grow with each swing — never force it to its limit straight away"] },
+        { name: "Hip Flexor Lunge Pulse", hold: 30, sets: 1, side: true, notes: "Low lunge, back knee on floor. Gentle pulses forward. Feel the front of the rear hip.", target: "Hip flexor / Psoas", cues: ["Drop into a low lunge with back knee on the floor", "The stretch is felt in the front of the back leg's hip — that's the psoas", "Keeping the torso upright, gently pulse forward over the front knee", "Small rhythmic pulses work better here than one static hold", "Tuck your pelvis under slightly to deepen the hip flexor stretch"] },
+        { name: "Ankle Circles", hold: 20, sets: 1, side: true, notes: "Lift foot, trace large slow circles both directions. Essential for chambered kicks.", target: "Ankle / Foot", cues: ["Lift one foot off the ground, holding the lower leg lightly if needed", "Draw the largest circle possible with your toes", "Do 10 circles in each direction before switching feet", "Focus on plantarflexion (pointing) and dorsiflexion (flexing) within the circle", "Tight ankles limit kick height — this is a small drill with a big payoff"] },
+      ]
+    },
+    {
+      id: "hip", label: "Hip & Groin Deep Work", tag: "Mon / Thu · 20 min", color: D.tkdRed, icon: "🔴",
+      purpose: "The hip flexors and adductors are the limiting factor for most kicks. Sustained holds here create lasting length change.",
+      stretches: [
+        { name: "90/90 Hip Stretch", hold: 60, sets: 2, side: true, notes: "Front and rear leg both at 90°. Sit tall, lean forward over front shin. The ultimate hip rotator stretch.", target: "Hip rotators / Glutes", cues: ["Sit on the floor with your front shin across in front of you at 90°, rear leg also at 90°", "Both knees should be bent to 90° — adjust foot position until this is comfortable", "Sit tall with a straight back before folding forward over the front shin", "The stretch is felt deep in the outer glute of the front leg — this is the piriformis", "Switch sides after the hold and feel the difference between your two hips"] },
+        { name: "Low Dragon Lunge", hold: 90, sets: 2, side: true, notes: "Back knee on floor, sink hips low. Arms inside front foot. Hold still — no bouncing.", target: "Hip flexor / Groin", cues: ["From a deep lunge, place the back knee on the floor and sink hips as low as possible", "Walk the front foot slightly out to the side and place both hands inside it", "Lower your hips straight down — the front of the back hip should feel a deep stretch", "Keep the spine long, don't collapse into the stretch — resist slightly", "Breathe out slowly and allow the hips to melt lower with each exhale"] },
+        { name: "Butterfly with Forward Fold", hold: 60, sets: 2, side: false, notes: "Soles of feet together. Press knees toward floor. Fold forward. Inner thighs and groin open.", target: "Adductors / Groin", cues: ["Sit with soles of feet pressed together, heels pulled in toward your groin", "Use your elbows to gently press knees toward the floor — don't force them", "Take a breath in to lengthen the spine, then exhale and fold forward", "Walk hands out in front as you fold — rest your head if you can", "Don't round aggressively — keep some length in the lower back"] },
+        { name: "Wide Stance Groin Stretch", hold: 60, sets: 2, side: false, notes: "Sit wide-legged, fold forward flat back. Walk hands out. Essential for side kicks and splits.", target: "Adductors", cues: ["Sit on the floor with legs spread as wide as comfortable", "Keep toes pointing up (not rolling inward) and knees facing the ceiling", "Take a breath in and grow tall, then exhale and walk hands forward", "Try to maintain a flat back as you fold — avoid rounding aggressively", "Each exhale, let gravity pull you slightly deeper — never force it"] },
+        { name: "Pigeon Pose", hold: 90, sets: 2, side: true, notes: "Front shin across mat, rear leg extended. Square hips. Fold onto forearms. Deep hip rotator work.", target: "Piriformis / Hip rotator", cues: ["From all fours, bring one shin across in front of you parallel to the top of the mat", "Extend the rear leg straight behind you and lower the hips toward the floor", "Square your hips — don't let the hip of the front leg tip up", "Fold forward onto your forearms for a deeper stretch", "This is the deepest hip rotator stretch in the programme — breathe and hold"] },
+        { name: "Frog Stretch", hold: 60, sets: 2, side: false, notes: "On all fours, knees wide, feet level with knees. Sink hips back and down. Breathe deeply.", target: "Adductors / Inner groin", cues: ["Start on all fours and widen your knees as far as comfortable", "Feet should be in line with the knees, turned out to match the knee angle", "Shift hips back slowly toward your heels while keeping forearms on the floor", "You should feel a deep stretch through both inner thighs", "Breathe into the stretch — on each exhale, see if the hips can sink a little lower"] },
+      ]
+    },
+    {
+      id: "hamstring", label: "Hamstring & Posterior Chain", tag: "Tue / Fri · 18 min", color: D.blue, icon: "💙",
+      purpose: "Front kicks, crescent kicks and high roundhouses demand long hamstrings. Active and passive techniques for faster progress.",
+      stretches: [
+        { name: "Active Straight Leg Raise", hold: 10, sets: 3, side: true, notes: "Lie on back, raise leg as high as possible under your own strength. Hold 10s. Builds active flexibility for kicks.", target: "Hamstring (active)", cues: ["Lie flat on your back, both legs straight", "Flex the foot of the working leg, then raise it as high as you can using only your muscles", "Hold at the peak for 10 seconds — this is hard, your leg will want to drop", "This trains active flexibility — the range you can actually use in a kick", "The difference between your active and passive range is your 'flexibility gap' to close"] },
+        { name: "Supine Hamstring Hold (belt)", hold: 60, sets: 2, side: true, notes: "Loop a belt around foot, lie on back, pull leg toward you. Knee straight. Breathe and relax into it.", target: "Hamstring (passive)", cues: ["Lie on your back, loop a belt, towel or band around one foot", "Keep the other leg flat on the floor and the working knee straight", "Pull the leg toward you until you feel a strong stretch — not pain", "Breathe slowly and deeply, letting the hamstring release with each exhale", "Don't force the leg closer — let it yield gradually over the 60 seconds"] },
+        { name: "Standing Forward Fold", hold: 60, sets: 2, side: false, notes: "Feet hip-width, soft knees, hang completely. Grab elbows and sway. Let gravity work.", target: "Hamstring / Lower back", cues: ["Stand with feet hip-width apart, micro-bend in the knees", "Hinge forward and let your torso hang completely — no tension in the back", "Grab opposite elbows overhead and let the weight of your arms deepen the fold", "Sway gently side to side to release tension unevenly held in one side", "Each exhale, let your torso hang a little heavier toward the floor"] },
+        { name: "Half Split (Runner's Stretch)", hold: 60, sets: 2, side: true, notes: "From lunge, slide rear knee back, straighten front leg, fold over it. Flat back first.", target: "Hamstring / Calf", cues: ["From a lunge, slide the back knee further away and straighten the front leg", "Flex the front foot and fold your torso over the straight leg", "Try to keep a flat back for the first 30 seconds — lengthen before you round", "Walk hands forward on either side of the front leg for a deeper fold", "Flex the front foot strongly to add a calf stretch into the movement"] },
+        { name: "Full Split Progression", hold: 60, sets: 2, side: false, notes: "Front-to-back split, hands on blocks/books. Hold where you are — each week you'll sink lower.", target: "Hamstring / Hip flexor", cues: ["Slide one leg forward and one back in a front-to-back split stance", "Use books, yoga blocks or your hands on the floor to support your weight", "Go only as deep as you can without sharp pain — tension is fine, pain is not", "Square your hips to the front — don't let the back hip rotate out", "Every week aim to use a slightly lower support — that's your measurable progress"] },
+        { name: "Seated Single-Leg Forward Fold", hold: 60, sets: 2, side: true, notes: "One leg extended, other foot at inner thigh. Fold over straight leg. Flex foot for calf stretch.", target: "Hamstring / Calf", cues: ["Sit with one leg extended straight, other foot pressed against the inner thigh", "Flex the extended foot toward you — this immediately deepens the stretch", "Inhale to sit tall and lengthen the spine, exhale to fold forward", "Aim to reach toward the foot — but don't round excessively to get there", "Hold the foot if you can reach it, or a towel/band looped around it"] },
+      ]
+    },
+    {
+      id: "kick", label: "Full Kick Mobility", tag: "Wed / Sat · 25 min", color: "#059669", icon: "🦵",
+      purpose: "Kick-specific patterns: the exact ranges required for Dollyo (roundhouse), Yop (side), Ap (front) and Dwi (back) kicks.",
+      stretches: [
+        { name: "Hip Flexor Couch Stretch", hold: 60, sets: 2, side: true, notes: "Rear foot on wall/sofa, front foot forward in lunge. Squeeze glute of rear leg. Essential for chambering.", target: "Hip flexor / Quad", cues: ["Kneel facing away from a wall or sofa, place one foot up the surface behind you", "Bring the opposite foot forward into a lunge position in front", "Squeeze the glute of the rear leg hard — this tilts the pelvis and deepens the hip flexor stretch", "Keep your torso upright — don't lean backward", "Tight hip flexors directly limit how high you can chamber your knee before kicking"] },
+        { name: "Standing Side Kick Hold", hold: 20, sets: 3, side: true, notes: "Hold wall, chamber knee, extend out to the side as high as comfortable. Active flexibility work.", target: "Abductors / Hip (active)", cues: ["Stand side-on to a wall with one hand on it for balance", "Chamber the outside knee up toward your hip, then extend the leg out to the side", "Hold at the highest point you can reach under your own strength", "This is active flexibility — harder than passive but directly transfers to kicking", "Over weeks, aim to hold higher and higher without losing form"] },
+        { name: "Standing Roundhouse Hold", hold: 20, sets: 3, side: true, notes: "Chamber knee to hip, pivot, extend leg out as in a roundhouse. Hold at peak. Builds Dollyo chagi range.", target: "Hip rotators / Hamstring (active)", cues: ["Stand facing forward, chamber one knee up and across the body", "Pivot on the standing foot and extend the leg out as in a roundhouse kick (Dollyo chagi)", "Hold the extended position at peak height for the full 20 seconds", "This builds the exact active range your roundhouse kick needs", "Track how high you can hold it each week — that's your kick height improving"] },
+        { name: "Deep Squat Hold", hold: 60, sets: 2, side: false, notes: "Feet slightly turned out, squat as deep as possible, heels flat. Elbows press knees open. Ankle and hip opener.", target: "Ankles / Hip / Groin", cues: ["Stand with feet just outside shoulder-width, toes turned out 30–45°", "Squat as deep as possible while keeping heels flat on the floor", "Use your elbows to press your knees open against your inner thighs", "Tall spine — hold a doorframe or pole in front for support if needed", "Limited depth usually means tight ankles — this position slowly improves both"] },
+        { name: "Side Split Progression", hold: 60, sets: 2, side: false, notes: "Legs wide to each side, hands on floor. Get as low as comfortable — goal over weeks is full side split.", target: "Adductors (full range)", cues: ["Stand with legs spread wide, toes pointing forward or slightly out", "Slowly walk hands down your legs or out in front of you as you lower", "Keep your pelvis tilted slightly forward (not tucked) for a better stretch", "Use blocks, books or a bolster under your hips for support at first", "Never force this — consistent weekly practice is how the side split comes"] },
+        { name: "Prone Hip Flexor Press (Cobra)", hold: 45, sets: 2, side: false, notes: "Face down, press up with arms, hips on floor. Lengthens hip flexors and opens front of body.", target: "Hip flexor / Spine", cues: ["Lie face down with hands under your shoulders", "Press up through your hands, lifting your chest while keeping hips on the floor", "Straighten arms as much as comfortable — look up and slightly forward", "Squeeze the glutes lightly to protect the lower back", "Feel the stretch along the entire front of your body — hip flexors and abdomen"] },
+        { name: "Standing Quad & Hip Stretch", hold: 45, sets: 2, side: true, notes: "Stand on one leg, pull other foot to glute. Tuck pelvis under to feel hip flexor stretch.", target: "Quad / Hip flexor", cues: ["Stand on one leg, pull the opposite foot up toward your glute", "Tuck your pelvis under (posterior tilt) — without this it's just a quad stretch, not hip flexor", "Keep knees together and stand tall", "Hold a wall for balance if needed, but try freestanding for balance training", "You should feel the stretch along the entire front of the thigh and into the hip"] },
+      ]
+    },
+    {
+      id: "cooldown", label: "Cool-Down Routine", tag: "Post-training · 10 min", color: D.purple, icon: "🌙",
+      purpose: "After every session. Muscles are warm and pliable — this is when passive flexibility gains happen fastest.",
+      stretches: [
+        { name: "Supine Figure-4 Stretch", hold: 60, sets: 1, side: true, notes: "Lie on back, cross ankle over opposite knee, pull thigh toward chest. Glute and hip rotator release.", target: "Glutes / Hip rotator", cues: ["Lie on your back, bend both knees with feet flat on the floor", "Cross one ankle over the opposite knee, forming a figure-4 shape", "Lift the bottom leg and pull both legs toward your chest", "Feel the stretch deep in the outer glute — this is the piriformis releasing", "For a deeper stretch, flex the raised foot and press the knee slightly away from you"] },
+        { name: "Supine Butterfly", hold: 60, sets: 1, side: false, notes: "Lie on back, soles together, let knees fall open. Arms out. Complete relaxation — no pushing.", target: "Groin / Adductors", cues: ["Lie on your back and bring the soles of your feet together", "Allow your knees to fall open naturally to the sides — don't force them down", "Arms out to the side, palms up, close your eyes", "This is a completely passive stretch — gravity does all the work", "Focus on releasing all tension and breathing slowly into the groin area"] },
+        { name: "Supine Hamstring Hold", hold: 60, sets: 1, side: true, notes: "Belt or towel around foot, straight leg toward ceiling. Completely passive — let leg weight do the work.", target: "Hamstring", cues: ["Lie on your back and loop a towel or belt around one foot", "Raise the leg toward the ceiling until you feel a stretch", "Keep the other leg flat on the floor and the working knee straight", "This is passive — let the leg weight do the work, don't pull with your arms", "After training is the optimal time for passive stretching — muscles are warm and pliable"] },
+        { name: "Spinal Twist", hold: 45, sets: 1, side: true, notes: "Lie on back, bring knee across body to floor. Opposite arm out. Breathe into the rotation.", target: "Spine / Glutes", cues: ["Lie on your back and bring one knee across your body toward the floor", "Opposite arm extends out to the side, look away from the bent knee", "Let the knee fall to the floor by gravity — don't force it", "Breathe into the rotation — each exhale allows a little more rotation", "Keep both shoulders grounded on the floor throughout"] },
+        { name: "Child's Pose", hold: 60, sets: 1, side: false, notes: "Kneel, sit back on heels, arms forward on floor. Breathe deeply. Decompress the spine.", target: "Hips / Lower back", cues: ["Kneel on the floor, big toes touching, knees wide apart", "Sit back toward your heels and walk hands forward along the floor", "Let your forehead rest on the floor and release all tension", "Breathe deeply into your lower back — feel it expand on the inhale", "This decompresses the spine and resets the nervous system after hard training"] },
+      ]
+    }
+  ]
+};
+
+// ─── STORAGE HELPERS ──────────────────────────────────────────────────────────
+const SK = {
+  strengthSet: (p, d, e, s) => `s_p${p}_d${d}_e${e}_s${s}`,
+  strengthHist: "strength_history_v2",
+  mobilityHist: "mobility_history_v2",
+};
+
+async function loadKey(key) {
+  try { const r = await window.storage.get(key, false); return r?.value ? JSON.parse(r.value) : null; } catch { return null; }
+}
+async function saveKey(key, val) {
+  try { await window.storage.set(key, JSON.stringify(val), false); } catch {}
+}
+
+// ─── TIMERS ───────────────────────────────────────────────────────────────────
+function useRestTimer() {
+  const [secs, setSecs] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [initial, setInitial] = useState(0);
+  const ref = useRef(null);
+  const start = useCallback((s) => {
+    clearInterval(ref.current);
+    setInitial(s); setSecs(s); setRunning(true);
+    ref.current = setInterval(() => setSecs(p => { if (p <= 1) { clearInterval(ref.current); setRunning(false); return 0; } return p - 1; }), 1000);
+  }, []);
+  const stop = useCallback(() => { clearInterval(ref.current); setRunning(false); setSecs(0); }, []);
+  useEffect(() => () => clearInterval(ref.current), []);
+  return { secs, running, progress: initial > 0 ? (initial - secs) / initial : 0, start, stop };
+}
+
+function useHoldTimer() {
+  const [secs, setSecs] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [initial, setInitial] = useState(0);
+  const [done, setDone] = useState(false);
+  const ref = useRef(null);
+  const start = useCallback((s) => {
+    clearInterval(ref.current);
+    setInitial(s); setSecs(s); setRunning(true); setDone(false);
+    ref.current = setInterval(() => setSecs(p => { if (p <= 1) { clearInterval(ref.current); setRunning(false); setDone(true); return 0; } return p - 1; }), 1000);
+  }, []);
+  const pause = useCallback(() => { clearInterval(ref.current); setRunning(false); }, []);
+  const resume = useCallback((s) => {
+    const rem = s !== undefined ? s : secs;
+    if (rem > 0) {
+      setSecs(rem); setRunning(true);
+      ref.current = setInterval(() => setSecs(p => { if (p <= 1) { clearInterval(ref.current); setRunning(false); setDone(true); return 0; } return p - 1; }), 1000);
+    }
+  }, [secs]);
+  const reset = useCallback((s) => { clearInterval(ref.current); setRunning(false); setDone(false); setSecs(s || initial); }, [initial]);
+  useEffect(() => () => clearInterval(ref.current), []);
+  return { secs, running, done, progress: initial > 0 ? 1 - secs / initial : 0, start, pause, resume, reset, initial };
+}
+
+// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
+function Mono({ children, style = {} }) {
+  return <span style={{ fontFamily: D.mono, ...style }}>{children}</span>;
+}
+function Label({ children, style = {} }) {
+  return <div style={{ fontSize: 9, letterSpacing: 5, color: D.muted, textTransform: "uppercase", fontFamily: D.mono, ...style }}>{children}</div>;
+}
+
+// ─── EXERCISE DETAIL MODAL ────────────────────────────────────────────────────
+function ExerciseDetailModal({ item, color, onClose }) {
+  if (!item) return null;
+  const isStretch = !!item.hold;
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, zIndex: 500,
+      background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end",
+      justifyContent: "center",
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: D.surface, borderRadius: "20px 20px 0 0",
+        width: "100%", maxWidth: 480,
+        maxHeight: "82vh", overflowY: "auto",
+        boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
+      }}>
+        {/* Handle */}
+        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
+          <div style={{ width: 36, height: 4, background: D.border, borderRadius: 2 }} />
+        </div>
+
+        {/* Header */}
+        <div style={{ padding: "12px 20px 16px", borderBottom: `1px solid ${D.border}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 9, fontFamily: D.mono, letterSpacing: 3, color, textTransform: "uppercase", marginBottom: 6 }}>
+                {isStretch ? item.target : item.muscles}
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.2 }}>{item.name}</div>
+            </div>
+            <button onClick={onClose} style={{ background: D.faint, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: D.muted, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          </div>
+
+          {/* Quick stats */}
+          <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+            {isStretch ? (
+              <>
+                <StatPill label="Hold" value={`${item.hold}s`} color={color} />
+                <StatPill label="Sets" value={`${item.sets}${item.side ? " each side" : ""}`} color={color} />
+              </>
+            ) : (
+              <>
+                <StatPill label="Sets" value={item.sets} color={color} />
+                <StatPill label="Target" value={item.target} color={color} />
+                <StatPill label="Rest" value={item.restType === "heavy" ? "2 min" : item.restType === "hold" ? "60s" : "90s"} color={color} />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Overview note */}
+        <div style={{ margin: "16px 20px 0", background: color + "0f", borderLeft: `3px solid ${color}`, borderRadius: "0 8px 8px 0", padding: "10px 14px" }}>
+          <div style={{ fontSize: 13, color: D.text, lineHeight: 1.6, fontStyle: "italic" }}>{item.notes}</div>
+        </div>
+
+        {/* Step-by-step cues */}
+        {item.cues && (
+          <div style={{ padding: "16px 20px 32px" }}>
+            <div style={{ fontSize: 9, fontFamily: D.mono, letterSpacing: 4, color: D.muted, textTransform: "uppercase", marginBottom: 14 }}>
+              How to do it
+            </div>
+            {item.cues.map((cue, i) => (
+              <div key={i} style={{ display: "flex", gap: 14, marginBottom: 14, alignItems: "flex-start" }}>
+                <div style={{
+                  width: 24, height: 24, borderRadius: "50%", background: color,
+                  color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: D.mono,
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1,
+                }}>{i + 1}</div>
+                <div style={{ fontSize: 14, color: D.text, lineHeight: 1.65, paddingTop: 2 }}>{cue}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatPill({ label, value, color }) {
+  return (
+    <div style={{ background: D.surface2, border: `1px solid ${D.border}`, borderRadius: 8, padding: "5px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+      <span style={{ fontSize: 8, fontFamily: D.mono, color: D.muted, textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color, fontFamily: D.mono }}>{value}</span>
+    </div>
+  );
+}
+function Card({ children, style = {}, color }) {
+  return (
+    <div style={{
+      background: D.surface, border: `1px solid ${D.border}`,
+      borderRadius: 12, overflow: "hidden",
+      borderTop: color ? `2px solid ${color}` : undefined,
+      ...style
+    }}>{children}</div>
+  );
+}
+
+// ─── REST TIMER OVERLAY ───────────────────────────────────────────────────────
+function RestOverlay({ secs, running, progress, color, onSkip }) {
+  if (!running && secs === 0) return null;
+  const r = 24, circ = 2 * Math.PI * r;
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return (
+    <div style={{
+      position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)",
+      background: D.surface, border: `1px solid ${color}66`,
+      borderRadius: 14, padding: "12px 18px",
+      display: "flex", alignItems: "center", gap: 14,
+      boxShadow: `0 0 30px ${color}18`, zIndex: 200, minWidth: 220,
+    }}>
+      <svg width={54} height={54} style={{ flexShrink: 0 }}>
+        <circle cx={27} cy={27} r={r} fill="none" stroke={D.border} strokeWidth={4} />
+        <circle cx={27} cy={27} r={r} fill="none" stroke={color} strokeWidth={4}
+          strokeDasharray={circ} strokeDashoffset={circ * (1 - progress)}
+          strokeLinecap="round" transform="rotate(-90 27 27)"
+          style={{ transition: "stroke-dashoffset 1s linear" }} />
+        <text x={27} y={32} textAnchor="middle" fill={D.text} fontSize={12} fontFamily={D.mono} fontWeight={700}>
+          {m > 0 ? `${m}:${String(s).padStart(2, "0")}` : s}
+        </text>
+      </svg>
+      <div>
+        <Label style={{ marginBottom: 3 }}>Rest</Label>
+        <div style={{ fontSize: 12, color: D.muted }}>Next set coming up…</div>
+        <button onClick={onSkip} style={{ marginTop: 6, background: "transparent", border: `1px solid ${D.faint}`, color: D.muted, borderRadius: 4, padding: "3px 10px", fontSize: 10, cursor: "pointer", fontFamily: D.mono }}>Skip →</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── RING HOLD TIMER ──────────────────────────────────────────────────────────
+function RingTimer({ timer, hold, color }) {
+  const size = 140, r = 58, circ = 2 * Math.PI * r;
+  const displaySecs = (!timer.running && !timer.done) ? hold : timer.secs;
+  const m = Math.floor(displaySecs / 60), s = displaySecs % 60;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      <div style={{ position: "relative", width: size, height: size }}>
+        <svg width={size} height={size}>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={D.border} strokeWidth={5} />
+          <circle cx={size/2} cy={size/2} r={r} fill="none"
+            stroke={timer.done ? D.teal : color} strokeWidth={5}
+            strokeDasharray={circ} strokeDashoffset={circ * (1 - timer.progress)}
+            strokeLinecap="round" transform={`rotate(-90 ${size/2} ${size/2})`}
+            style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          {timer.done
+            ? <span style={{ fontSize: 30 }}>✓</span>
+            : <>
+                <span style={{ fontSize: 28, fontWeight: 700, fontFamily: D.mono, color: D.text, lineHeight: 1 }}>
+                  {m > 0 ? `${m}:${String(s).padStart(2,"0")}` : displaySecs}
+                </span>
+                <Label style={{ marginTop: 4, color: timer.running ? color : D.muted }}>
+                  {timer.running ? "hold" : "ready"}
+                </Label>
+              </>
+          }
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        {!timer.running && !timer.done && timer.secs === 0 && (
+          <button onClick={() => timer.start(hold)} style={pill(color, "#fff")}>Start</button>
+        )}
+        {timer.running && (
+          <button onClick={timer.pause} style={pill(D.surface2, D.text)}>Pause</button>
+        )}
+        {!timer.running && !timer.done && timer.secs > 0 && (
+          <>
+            <button onClick={() => timer.resume()} style={pill(color, "#fff")}>Resume</button>
+            <button onClick={() => timer.reset(hold)} style={pill(D.faint, D.muted)}>Reset</button>
+          </>
+        )}
+        {timer.done && (
+          <button onClick={() => timer.reset(hold)} style={pill(D.faint, D.muted)}>Again</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function pill(bg, fg) {
+  return { background: bg, color: fg, border: "none", borderRadius: 7, padding: "8px 18px", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: D.mono };
+}
+
+// pill with white text for coloured backgrounds
+const pillWhite = (bg) => pill(bg, "#fff");
+const pillGhost = () => pill(D.faint, D.muted);
+
+// ─── STRENGTH WORKOUT VIEW ────────────────────────────────────────────────────
+function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
+  const ph = strengthPlan.phases[phaseIdx];
+  const day = ph.days[dayIdx];
+  const color = ph.color;
+  const rest = useRestTimer();
+  const [logs, setLogs] = useState({});
+  const [finished, setFinished] = useState(false);
+  const [detailItem, setDetailItem] = useState(null);
+
+  const totalSets = day.exercises.reduce((a, e) => a + e.sets, 0);
+  const doneSets = Object.keys(logs).length;
+  const pct = totalSets > 0 ? (doneSets / totalSets) * 100 : 0;
+  const allDone = doneSets === totalSets;
+
+  const handleSave = (ei, si, reps) => {
+    const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
+    setLogs(prev => ({ ...prev, [key]: reps }));
+    try { window.storage.set(key, String(reps), false); } catch {}
+    const ex = day.exercises[ei];
+    rest.start(ex.restType === "heavy" ? 120 : ex.restType === "hold" ? 60 : ex.rest || 90);
+  };
+
+  const handleFinish = async () => {
+    const prev = await loadKey(SK.strengthHist) || [];
+    const entry = {
+      type: "strength", date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }),
+      label: `${day.day} — ${day.type}`, sub: ph.label, sets: doneSets, total: totalSets, color,
+    };
+    await saveKey(SK.strengthHist, [entry, ...prev].slice(0, 40));
+    setFinished(true);
+    onComplete();
+  };
+
+  if (finished) return (
+    <div style={{ textAlign: "center", padding: "60px 20px" }}>
+      <div style={{ fontSize: 56, marginBottom: 16 }}>💪</div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Workout Done!</div>
+      <div style={{ color: D.muted, marginBottom: 28 }}>{doneSets}/{totalSets} sets logged</div>
+      <button onClick={onBack} style={pill(color, "#fff")}>← Back to Plan</button>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+          <Label>Progress</Label>
+          <Mono style={{ fontSize: 11, color }}>{doneSets}/{totalSets} sets</Mono>
+        </div>
+        <div style={{ height: 4, background: D.border, borderRadius: 2 }}>
+          <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 2, transition: "width 0.4s" }} />
+        </div>
+      </div>
+
+      {day.exercises.map((ex, ei) => (
+        <Card key={ei} style={{ marginBottom: 12 }} color={color}>
+          <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{ex.name}</span>
+              <Mono style={{ fontSize: 11, color, flexShrink: 0 }}>{ex.sets}×{ex.target}</Mono>
+            </div>
+            <div style={{ fontSize: 12, color: D.muted, marginTop: 5, lineHeight: 1.5 }}>{ex.notes}</div>
+            <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: D.faint, borderRadius: 4, padding: "2px 8px" }}>
+                <Mono style={{ fontSize: 9, color: D.muted }}>
+                  ⏱ {ex.restType === "heavy" ? "2 min rest" : ex.restType === "hold" ? "60s rest" : "90s rest"}
+                </Mono>
+              </div>
+              {ex.cues && (
+                <button onClick={() => setDetailItem(ex)} style={{ background: "transparent", border: `1px solid ${color}55`, borderRadius: 4, padding: "2px 10px", cursor: "pointer", fontFamily: D.mono, fontSize: 9, color, letterSpacing: 1 }}>
+                  How to →
+                </button>
+              )}
+            </div>
+          </div>
+          <div style={{ padding: "12px 15px", display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {Array.from({ length: ex.sets }, (_, si) => {
+              const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
+              const saved = logs[key];
+              return (
+                <SetBox key={si} label={`Set ${si + 1}`} target={ex.target} color={color}
+                  saved={saved} onSave={r => handleSave(ei, si, r)} />
+              );
+            })}
+          </div>
+        </Card>
+      ))}
+
+      {allDone && (
+        <button onClick={handleFinish} style={{ width: "100%", background: color, color: "#fff", border: "none", borderRadius: 10, padding: "15px", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: D.font, marginTop: 4, marginBottom: 80 }}>
+          ✓ Complete Workout
+        </button>
+      )}
+      <RestOverlay secs={rest.secs} running={rest.running} progress={rest.progress} color={color} onSkip={rest.stop} />
+      <ExerciseDetailModal item={detailItem} color={color} onClose={() => setDetailItem(null)} />
+    </div>
+  );
+}
+
+function SetBox({ label, target, color, saved, onSave }) {
+  const [val, setVal] = useState(saved != null ? String(saved) : "");
+  const done = val !== "";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+      <Mono style={{ fontSize: 9, color: D.muted, minWidth: 30 }}>{label}</Mono>
+      <input type="number" min={0} max={99} value={val} placeholder="—"
+        onChange={e => setVal(e.target.value)}
+        onBlur={() => { if (val !== "") onSave(Number(val)); }}
+        style={{ width: 44, background: done ? "#2a1f08" : D.surface2, border: `1px solid ${done ? color + "88" : D.border}`, color: done ? color : D.muted, borderRadius: 5, padding: "5px 4px", fontFamily: D.mono, fontSize: 14, textAlign: "center", outline: "none" }} />
+      <Mono style={{ fontSize: 9, color: D.faint }}>/{target}</Mono>
+    </div>
+  );
+}
+
+// ─── MOBILITY STRETCH CARD ────────────────────────────────────────────────────
+function StretchCard({ stretch, color, idx, onSetDone, totalDone, totalSets }) {
+  const timer = useHoldTimer();
+  const [activeSide, setActiveSide] = useState("left");
+  const [localDone, setLocalDone] = useState(0);
+  const [showDetail, setShowDetail] = useState(false);
+  const myTotal = stretch.sets * (stretch.side ? 2 : 1);
+  const allDone = localDone >= myTotal;
+
+  const handleNext = () => {
+    if (localDone < myTotal) {
+      const next = localDone + 1;
+      setLocalDone(next);
+      onSetDone();
+      if (stretch.side && activeSide === "left" && next < myTotal) setActiveSide("right");
+      else setActiveSide("left");
+      timer.reset(stretch.hold);
+    }
+  };
+
+  return (
+    <Card style={{ marginBottom: 14 }} color={allDone ? color : undefined}>
+      <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 5 }}>
+              <Mono style={{ fontSize: 9, color: allDone ? color : D.muted, textTransform: "uppercase", letterSpacing: 2 }}>
+                {allDone ? "✓ done" : `#${idx + 1}`}
+              </Mono>
+              <span style={{ color: D.faint, fontSize: 9 }}>·</span>
+              <Mono style={{ fontSize: 9, color: D.muted }}>{stretch.target}</Mono>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}>{stretch.name}</div>
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <Mono style={{ fontSize: 14, fontWeight: 700, color }}>{stretch.hold}s</Mono>
+            <div style={{ fontSize: 9, color: D.muted, fontFamily: D.mono, marginTop: 2 }}>
+              {stretch.sets}set{stretch.sets > 1 ? "s" : ""}{stretch.side ? " · each" : ""}
+            </div>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: D.muted, fontStyle: "italic", lineHeight: 1.5, marginTop: 4 }}>{stretch.notes}</div>
+        {stretch.cues && (
+          <button onClick={() => setShowDetail(true)} style={{ marginTop: 8, background: "transparent", border: `1px solid ${color}55`, borderRadius: 4, padding: "2px 10px", cursor: "pointer", fontFamily: D.mono, fontSize: 9, color, letterSpacing: 1 }}>
+            How to →
+          </button>
+        )}
+      </div>
+
+      {showDetail && <ExerciseDetailModal item={stretch} color={color} onClose={() => setShowDetail(false)} />}
+
+      {!allDone && (
+        <div style={{ padding: "18px 15px", background: D.bg }}>
+          {stretch.side && (
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 16 }}>
+              {["left", "right"].map(s => (
+                <button key={s} onClick={() => setActiveSide(s)} style={{
+                  background: activeSide === s ? color : "transparent",
+                  color: activeSide === s ? "#fff" : D.muted,
+                  border: `1px solid ${activeSide === s ? color : D.border}`,
+                  borderRadius: 6, padding: "5px 14px", cursor: "pointer",
+                  fontFamily: D.mono, fontSize: 10, textTransform: "capitalize", letterSpacing: 1,
+                }}>{s}</button>
+              ))}
+            </div>
+          )}
+          <RingTimer timer={timer} hold={stretch.hold} color={color} />
+          {timer.done && (
+            <div style={{ textAlign: "center", marginTop: 14 }}>
+              <div style={{ fontSize: 10, color: D.muted, fontFamily: D.mono, marginBottom: 8 }}>
+                Set {localDone + 1}/{myTotal}{stretch.side ? ` — ${activeSide}` : ""}
+              </div>
+              <button onClick={handleNext} style={pill(color, "#fff")}>
+                {localDone + 1 < myTotal ? "Next Set →" : "Complete ✓"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {allDone && (
+        <div style={{ padding: "11px 15px", background: color + "12", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 16 }}>✓</span>
+          <Mono style={{ fontSize: 12, color, fontWeight: 700 }}>{myTotal} set{myTotal > 1 ? "s" : ""} completed</Mono>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ─── MOBILITY SESSION VIEW ────────────────────────────────────────────────────
+function MobilitySession({ session, onBack, onComplete }) {
+  const [setsLogged, setSetsLogged] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const totalSets = session.stretches.reduce((a, s) => a + s.sets * (s.side ? 2 : 1), 0);
+  const pct = Math.min((setsLogged / totalSets) * 100, 100);
+
+  const handleFinish = async () => {
+    const prev = await loadKey(SK.mobilityHist) || [];
+    const entry = {
+      type: "mobility", date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }),
+      label: session.label, sub: session.tag.split("·")[1]?.trim() || "", color: session.color,
+    };
+    await saveKey(SK.mobilityHist, [entry, ...prev].slice(0, 50));
+    setFinished(true);
+    onComplete();
+  };
+
+  if (finished) return (
+    <div style={{ textAlign: "center", padding: "60px 20px" }}>
+      <div style={{ fontSize: 56, marginBottom: 16 }}>🥋</div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Session Complete!</div>
+      <div style={{ color: D.muted, marginBottom: 28 }}>{session.label}</div>
+      <button onClick={onBack} style={pill(session.color, "#fff")}>← Back to Mobility</button>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+          <Label>Progress</Label>
+          <Mono style={{ fontSize: 11, color: session.color }}>{Math.round(pct)}%</Mono>
+        </div>
+        <div style={{ height: 4, background: D.border, borderRadius: 2 }}>
+          <div style={{ height: "100%", width: `${pct}%`, background: session.color, borderRadius: 2, transition: "width 0.5s" }} />
+        </div>
+      </div>
+
+      <div style={{ background: D.surface2, borderLeft: `3px solid ${session.color}`, borderRadius: 8, padding: "12px 14px", marginBottom: 18 }}>
+        <Label style={{ color: session.color, marginBottom: 5 }}>Why this session</Label>
+        <div style={{ fontSize: 12, color: D.muted, lineHeight: 1.6 }}>{session.purpose}</div>
+      </div>
+
+      {session.stretches.map((s, i) => (
+        <StretchCard key={i} stretch={s} color={session.color} idx={i}
+          onSetDone={() => setSetsLogged(p => p + 1)}
+          totalDone={setsLogged} totalSets={totalSets} />
+      ))}
+
+      {pct >= 100 && (
+        <button onClick={handleFinish} style={{ width: "100%", background: session.color, color: "#fff", border: "none", borderRadius: 10, padding: "15px", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: D.font, marginTop: 4, marginBottom: 80 }}>
+          ✓ Complete Session
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── STRENGTH PLAN TAB ────────────────────────────────────────────────────────
+function StrengthTab({ onStartWorkout }) {
+  const [activePhase, setActivePhase] = useState(0);
+  const [weekA, setWeekA] = useState(true);
+  const [detailItem, setDetailItem] = useState(null);
+  const ph = strengthPlan.phases[activePhase];
+  // Week A: days 0,2,1 (Upper1, Upper2, Lower1) | Week B: days 3,0,2 (Lower2, Upper1, Lower1)
+  const weekDays = weekA ? [0, 2, 1] : [3, 0, 2];
+  const weekLabels = weekA
+    ? ["Session 1 — Upper 1", "Session 2 — Lower 1", "Session 3 — Upper 2"]
+    : ["Session 1 — Lower 2", "Session 2 — Upper 1", "Session 3 — Lower 1"];
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        {strengthPlan.phases.map((p, i) => (
+          <button key={i} onClick={() => setActivePhase(i)} style={{
+            flex: 1, background: activePhase === i ? p.color : D.surface,
+            color: activePhase === i ? "#fff" : D.text,
+            border: `1px solid ${activePhase === i ? p.color : D.border}`,
+            borderRadius: 8, padding: "9px 4px", cursor: "pointer", fontFamily: D.font,
+          }}>
+            <Mono style={{ fontSize: 8, letterSpacing: 2, textTransform: "uppercase", opacity: 0.8, display: "block" }}>{p.phase}</Mono>
+            <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>{p.label}</div>
+            <Mono style={{ fontSize: 8, opacity: 0.6, marginTop: 1, display: "block" }}>{p.weeks}</Mono>
+          </button>
+        ))}
+      </div>
+
+      {/* Week A/B toggle */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        {[true, false].map(isA => (
+          <button key={String(isA)} onClick={() => setWeekA(isA)} style={{
+            flex: 1, background: weekA === isA ? ph.color : D.surface2,
+            color: weekA === isA ? "#fff" : D.muted,
+            border: `1px solid ${weekA === isA ? ph.color : D.border}`,
+            borderRadius: 8, padding: "10px 8px", cursor: "pointer", fontFamily: D.font,
+          }}>
+            <Mono style={{ fontSize: 9, letterSpacing: 2, textTransform: "uppercase", display: "block", opacity: 0.8 }}>{isA ? "Week A" : "Week B"}</Mono>
+            <div style={{ fontSize: 11, marginTop: 3, fontWeight: 600 }}>{isA ? "Upper · Lower · Upper" : "Lower · Upper · Lower"}</div>
+          </button>
+        ))}
+      </div>
+
+      <div style={{ background: D.surface, borderLeft: `3px solid ${ph.color}`, border: `1px solid ${ph.color}22`, borderRadius: 8, padding: "11px 14px", marginBottom: 16 }}>
+        <Mono style={{ color: ph.color, fontSize: 9, textTransform: "uppercase", letterSpacing: 3 }}>Goal · </Mono>
+        <span style={{ fontSize: 12, color: D.muted, lineHeight: 1.6 }}>{ph.goal}</span>
+      </div>
+
+      {weekDays.map((di, sessionIdx) => {
+        const d = ph.days[di];
+        return (
+          <Card key={di} style={{ marginBottom: 12 }}>
+            <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 15 }}>{weekLabels[sessionIdx]}</span>
+              </div>
+              <Mono style={{ fontSize: 10, color: ph.color }}>{d.type}</Mono>
+            </div>
+            <div style={{ padding: "8px 15px" }}>
+              {d.exercises.map((ex, ei) => (
+                <div key={ei} onClick={() => setDetailItem(ex)} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: ei < d.exercises.length - 1 ? `1px solid ${D.border}` : "none", alignItems: "center", cursor: "pointer" }}>
+                  <div>
+                    <span style={{ fontSize: 12 }}>{ex.name}</span>
+                    <Mono style={{ fontSize: 9, color: D.muted, marginLeft: 6 }}>
+                      {ex.restType === "heavy" ? "⏱2m30s" : "⏱90s"}
+                    </Mono>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Mono style={{ fontSize: 10, color: ph.color }}>{ex.sets}×{ex.target}</Mono>
+                    <span style={{ fontSize: 12, color: D.muted }}>›</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "11px 15px", borderTop: `1px solid ${D.border}` }}>
+              <button onClick={() => onStartWorkout(activePhase, di)} style={{ width: "100%", background: ph.color, color: "#fff", border: "none", borderRadius: 7, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: D.font }}>
+                Start Workout →
+              </button>
+            </div>
+          </Card>
+        );
+      })}
+
+      <ExerciseDetailModal item={detailItem} color={ph.color} onClose={() => setDetailItem(null)} />
+
+      <div style={{ marginTop: 16 }}>
+        <Label style={{ marginBottom: 10 }}>Split Pattern</Label>
+        <Card>
+          {[["Week A","Upper 1 → Lower 1 → Upper 2"],["Week B","Lower 2 → Upper 1 → Lower 1"],["Frequency","Each muscle trained ~1.5× per week"],["Alternates","Swap weeks each time — infinite loop"]].map(([w,r],i,arr) => (
+            <div key={i} style={{ display: "flex", gap: 12, padding: "11px 15px", borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : "none" }}>
+              <Mono style={{ fontSize: 9, color: D.amber, flexShrink: 0, marginTop: 2 }}>{w}</Mono>
+              <span style={{ fontSize: 12, color: D.muted, lineHeight: 1.5 }}>{r}</span>
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <Label style={{ marginBottom: 10 }}>Progression Rules</Label>
+        <Card>
+          {[["Each session","Beat last session by 1 rep or improve form"],["Every 2 weeks","Add a 3s eccentric to main lifts"],["End of phase","Deload week: 50% volume, form focus"],["Phase 2+","Take sets to 1–2 reps from failure"]].map(([w,r],i,arr) => (
+            <div key={i} style={{ display: "flex", gap: 12, padding: "11px 15px", borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : "none" }}>
+              <Mono style={{ fontSize: 9, color: D.amber, flexShrink: 0, marginTop: 2 }}>{w}</Mono>
+              <span style={{ fontSize: 12, color: D.muted, lineHeight: 1.5 }}>{r}</span>
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      <div style={{ marginTop: 16, background: "#1a2e20", border: "1px solid #c6e8d4", borderRadius: 8, padding: "14px", fontSize: 11, color: "#7ee8a2", lineHeight: 1.7, textAlign: "center" }}>
+        💪 Protein + sleep + consistency = results.<br/>Aim 0.7g protein per lb bodyweight daily.
+      </div>
+    </div>
+  );
+}
+
+// ─── MOBILITY PLAN TAB ────────────────────────────────────────────────────────
+function MobilityTab({ onStartSession }) {
+  const [detailItem, setDetailItem] = useState(null);
+  const [detailColor, setDetailColor] = useState(D.tkdRed);
+  const scheduleItems = [
+    { day: "Daily", label: "Morning Activation", color: D.gold, duration: "8 min" },
+    { day: "Mon / Thu", label: "Hip & Groin Deep Work", color: D.tkdRed, duration: "20 min" },
+    { day: "Tue / Fri", label: "Hamstring & Posterior Chain", color: D.blue, duration: "18 min" },
+    { day: "Wed / Sat", label: "Full Kick Mobility", color: "#059669", duration: "25 min" },
+    { day: "Post-training", label: "Cool-Down Routine", color: D.purple, duration: "10 min" },
+  ];
+
+  return (
+    <div>
+      <Card style={{ marginBottom: 18 }}>
+        <div style={{ padding: "14px 15px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <span style={{ fontSize: 22 }}>🥋</span>
+            <Mono style={{ fontSize: 9, letterSpacing: 4, color: D.tkdRed, textTransform: "uppercase" }}>TKD Mobility</Mono>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: D.muted, lineHeight: 1.7 }}>
+            High kicks, spinning techniques and fast transitions all require hip flexors, hamstrings, adductors, hip rotators and ankles to work together. This programme builds that range systematically.
+          </p>
+        </div>
+      </Card>
+
+      <Label style={{ marginBottom: 10 }}>Stretch Schedule</Label>
+      <Card style={{ marginBottom: 18 }}>
+        {scheduleItems.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 15px", borderBottom: i < scheduleItems.length-1 ? `1px solid ${D.border}` : "none" }}>
+            <div style={{ width: 3, height: 28, background: s.color, borderRadius: 2, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700 }}>{s.label}</div>
+              <Mono style={{ fontSize: 9, color: D.muted, marginTop: 1 }}>{s.day}</Mono>
+            </div>
+            <Mono style={{ fontSize: 10, color: s.color, fontWeight: 700 }}>{s.duration}</Mono>
+          </div>
+        ))}
+      </Card>
+
+      <Label style={{ marginBottom: 10 }}>Sessions</Label>
+      {mobilityPlan.sessions.map((s, i) => (
+        <Card key={i} style={{ marginBottom: 12 }} color={s.color}>
+          <div style={{ padding: "14px 15px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+              <div>
+                <Mono style={{ fontSize: 9, color: s.color, textTransform: "uppercase", letterSpacing: 3, display: "block", marginBottom: 4 }}>{s.tag}</Mono>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>{s.icon} {s.label}</div>
+              </div>
+              <Mono style={{ fontSize: 10, color: D.muted }}>{s.stretches.length} stretches</Mono>
+            </div>
+            <p style={{ margin: "6px 0 12px", fontSize: 12, color: D.muted, lineHeight: 1.6 }}>{s.purpose}</p>
+            <div style={{ marginBottom: 12 }}>
+              {s.stretches.map((st, si) => (
+                <div key={si} onClick={() => { setDetailItem(st); setDetailColor(s.color); }} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: si < s.stretches.length-1 ? `1px solid ${D.border}` : "none", alignItems: "center", cursor: "pointer" }}>
+                  <span style={{ fontSize: 11, color: D.text }}>{st.name}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Mono style={{ fontSize: 10, color: s.color }}>{st.hold}s{st.side ? " ×2" : ""}{st.sets > 1 ? ` ×${st.sets}` : ""}</Mono>
+                    <span style={{ fontSize: 12, color: D.muted }}>›</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => onStartSession(s)} style={{ width: "100%", background: s.color, color: "#fff", border: "none", borderRadius: 7, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: D.font }}>
+              Begin Session →
+            </button>
+          </div>
+        </Card>
+      ))}
+
+      <ExerciseDetailModal item={detailItem} color={detailColor} onClose={() => setDetailItem(null)} />
+
+      <Card style={{ marginTop: 8 }}>
+        <div style={{ padding: "14px 15px" }}>
+          <Mono style={{ fontSize: 9, letterSpacing: 4, color: D.tkdRed, textTransform: "uppercase", display: "block", marginBottom: 12 }}>Key Principles</Mono>
+          {[["Never force range","Stretch to tension, not sharp pain."],["Breathe into each hold","Exhale to deepen. Never hold your breath."],["Daily beats weekly","10 min daily beats 2hrs weekly for flexibility."],["Active matters most","Active flexibility is what you kick with."],["Expect 6–8 weeks","Visible changes take time. Trust the process."]].map(([t,d],i) => (
+            <div key={i} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: D.tkdRed, marginTop: 7, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700 }}>{t}</div>
+                <div style={{ fontSize: 11, color: D.muted, lineHeight: 1.5, marginTop: 2 }}>{d}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── HISTORY TAB ──────────────────────────────────────────────────────────────
+function HistoryTab({ sHistory, mHistory }) {
+  const all = [...(sHistory || []), ...(mHistory || [])]
+    .sort((a, b) => 0)
+    .slice(0, 40);
+
+  const totalStrength = (sHistory || []).length;
+  const totalMobility = (mHistory || []).length;
+  const streak = Math.min(totalStrength + totalMobility, 99);
+
+  if (all.length === 0) return (
+    <div style={{ textAlign: "center", padding: "60px 20px" }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>📊</div>
+      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No sessions yet</div>
+      <div style={{ fontSize: 13, color: D.muted }}>Complete your first workout or stretch session to see your history here.</div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 22 }}>
+        {[["Total", all.length, D.text], ["Strength", totalStrength, D.amber], ["Mobility", totalMobility, D.tkdRed]].map(([l,v,c]) => (
+          <Card key={l}>
+            <div style={{ padding: "14px 12px", textAlign: "center" }}>
+              <div style={{ fontSize: 26, fontWeight: 700, fontFamily: D.mono, color: c }}>{v}</div>
+              <div style={{ fontSize: 9, color: D.muted, marginTop: 3, fontFamily: D.mono, textTransform: "uppercase", letterSpacing: 1 }}>{l}</div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <Label style={{ marginBottom: 12 }}>Activity Log</Label>
+      {(sHistory || []).map((h, i) => (
+        <div key={`s${i}`} style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "13px 15px", marginBottom: 9, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <div style={{ width: 3, height: 36, background: h.color, borderRadius: 2, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>{h.label}</div>
+              <Mono style={{ fontSize: 10, color: D.muted, display: "block", marginTop: 2 }}>{h.sub} · {h.date}</Mono>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <Mono style={{ fontSize: 18, fontWeight: 700, color: h.sets === h.total ? D.amber : D.orange }}>{h.sets}/{h.total}</Mono>
+            <Mono style={{ fontSize: 9, color: D.muted, display: "block" }}>sets</Mono>
+          </div>
+        </div>
+      ))}
+      {(mHistory || []).map((h, i) => (
+        <div key={`m${i}`} style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "13px 15px", marginBottom: 9, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <div style={{ width: 3, height: 36, background: h.color, borderRadius: 2, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>{h.label}</div>
+              <Mono style={{ fontSize: 10, color: D.muted, display: "block", marginTop: 2 }}>Mobility · {h.date}</Mono>
+            </div>
+          </div>
+          <div style={{ background: h.color + "22", color: h.color, borderRadius: 6, padding: "4px 10px" }}>
+            <Mono style={{ fontSize: 11, fontWeight: 700 }}>✓</Mono>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── HOME DASHBOARD ───────────────────────────────────────────────────────────
+function HomeTab({ sHistory, mHistory, onGoStrength, onGoMobility }) {
+  const totalS = (sHistory || []).length;
+  const totalM = (mHistory || []).length;
+  const total = totalS + totalM;
+  const lastS = sHistory?.[0];
+  const lastM = mHistory?.[0];
+
+  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+
+  return (
+    <div>
+      {/* Greeting */}
+      <div style={{ marginBottom: 22 }}>
+        <div style={{ fontSize: 11, color: D.muted, fontFamily: D.mono, marginBottom: 4 }}>{today}</div>
+        <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.2 }}>Training Hub 🥋</div>
+        <div style={{ fontSize: 13, color: D.muted, marginTop: 6, lineHeight: 1.6 }}>
+          Your home calisthenics & TKD mobility programme, all in one place.
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 22 }}>
+        {[["Sessions", total, D.text], ["Strength", totalS, D.amber], ["Mobility", totalM, D.tkdRed]].map(([l,v,c]) => (
+          <Card key={l}>
+            <div style={{ padding: "14px 10px", textAlign: "center" }}>
+              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: D.mono, color: c }}>{v}</div>
+              <Mono style={{ fontSize: 9, color: D.muted, marginTop: 3, textTransform: "uppercase", letterSpacing: 1, display: "block" }}>{l}</Mono>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Quick start */}
+      <Label style={{ marginBottom: 10 }}>Quick Start</Label>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+        <button onClick={onGoStrength} style={{ background: "#1f1a0e", border: `1px solid ${D.amber}44`, borderRadius: 10, padding: "16px 14px", cursor: "pointer", textAlign: "left" }}>
+          <div style={{ fontSize: 22, marginBottom: 8 }}>💪</div>
+          <div style={{ fontWeight: 700, fontSize: 14, color: D.amber }}>Strength</div>
+          <div style={{ fontSize: 11, color: D.muted, marginTop: 3 }}>Calisthenics · 3×/week</div>
+        </button>
+        <button onClick={onGoMobility} style={{ background: "#1f1518", border: `1px solid ${D.tkdRed}44`, borderRadius: 10, padding: "16px 14px", cursor: "pointer", textAlign: "left" }}>
+          <div style={{ fontSize: 22, marginBottom: 8 }}>🥋</div>
+          <div style={{ fontWeight: 700, fontSize: 14, color: D.tkdRed }}>Mobility</div>
+          <div style={{ fontSize: 11, color: D.muted, marginTop: 3 }}>TKD Stretching · Daily</div>
+        </button>
+      </div>
+
+      {/* Combined weekly schedule */}
+      <Label style={{ marginBottom: 10 }}>This Week's Plan</Label>
+      <Card style={{ marginBottom: 22 }}>
+        {[
+          { day: "Mon", strength: "Upper 1", mobility: "Hip & Groin", sColor: D.amber, mColor: D.tkdRed },
+          { day: "Tue", strength: "Lower 1", mobility: "Hamstrings", sColor: D.blue, mColor: D.teal },
+          { day: "Wed", strength: "Rest", mobility: "Kick Mobility", sColor: D.muted, mColor: "#059669" },
+          { day: "Thu", strength: "Upper 2", mobility: "Hip & Groin", sColor: D.amber, mColor: D.tkdRed },
+          { day: "Fri", strength: "Rest", mobility: "Hamstrings", sColor: D.muted, mColor: D.teal },
+          { day: "Sat", strength: "Lower 2", mobility: "Kick Mobility", sColor: D.blue, mColor: "#059669" },
+          { day: "Sun", strength: "Rest", mobility: "Rest / Morning", sColor: D.muted, mColor: D.gold },
+        ].map((d, i, arr) => (
+          <div key={i} style={{ display: "grid", gridTemplateColumns: "36px 1fr 1fr", gap: 8, padding: "9px 15px", borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : "none", alignItems: "center" }}>
+            <Mono style={{ fontSize: 9, color: D.muted, textTransform: "uppercase" }}>{d.day}</Mono>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 3, height: 14, background: d.sColor, borderRadius: 1, flexShrink: 0 }} />
+              <span style={{ fontSize: 10, color: d.strength === "Rest" ? D.muted : D.text }}>{d.strength}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 3, height: 14, background: d.mColor, borderRadius: 1, flexShrink: 0 }} />
+              <span style={{ fontSize: 10, color: D.text }}>{d.mobility}</span>
+            </div>
+          </div>
+        ))}
+      </Card>
+
+      {/* Recent activity */}
+      {(lastS || lastM) && (
+        <>
+          <Label style={{ marginBottom: 10 }}>Last Sessions</Label>
+          {lastS && (
+            <div style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>{lastS.label}</div>
+                <Mono style={{ fontSize: 10, color: D.muted, display: "block", marginTop: 2 }}>💪 Strength · {lastS.date}</Mono>
+              </div>
+              <Mono style={{ fontSize: 16, fontWeight: 700, color: lastS.color }}>{lastS.sets}/{lastS.total}</Mono>
+            </div>
+          )}
+          {lastM && (
+            <div style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>{lastM.label}</div>
+                <Mono style={{ fontSize: 10, color: D.muted, display: "block", marginTop: 2 }}>🥋 Mobility · {lastM.date}</Mono>
+              </div>
+              <div style={{ background: lastM.color + "22", color: lastM.color, borderRadius: 6, padding: "4px 10px" }}>
+                <Mono style={{ fontSize: 12, fontWeight: 700 }}>✓</Mono>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <div style={{ marginTop: 8, background: "#1a1f3a", border: "1px solid #c7d2fe", borderRadius: 8, padding: "14px", fontSize: 11, color: "#a5b4fc", lineHeight: 1.7, textAlign: "center" }}>
+        🥋 Strength + flexibility = unstoppable kicks.<br/>Do both. Every week. Without exception.
+      </div>
+    </div>
+  );
+}
+
+// ─── ROOT APP ─────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab] = useState("home");
+  const [view, setView] = useState("list"); // list | workout | session
+  const [workoutPhase, setWorkoutPhase] = useState(0);
+  const [workoutDay, setWorkoutDay] = useState(0);
+  const [activeSession, setActiveSession] = useState(null);
+  const [sHistory, setSHistory] = useState([]);
+  const [mHistory, setMHistory] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    loadKey(SK.strengthHist).then(d => setSHistory(d || []));
+    loadKey(SK.mobilityHist).then(d => setMHistory(d || []));
+  }, [refreshKey]);
+
+  const startWorkout = (phaseIdx, dayIdx) => {
+    setWorkoutPhase(phaseIdx); setWorkoutDay(dayIdx);
+    setView("workout"); setTab("strength");
+  };
+  const startSession = (session) => {
+    setActiveSession(session);
+    setView("session"); setTab("mobility");
+  };
+  const handleComplete = () => setRefreshKey(k => k + 1);
+
+  const navItems = [
+    { id: "home", icon: "⌂", label: "Home" },
+    { id: "strength", icon: "💪", label: "Strength" },
+    { id: "mobility", icon: "🥋", label: "Mobility" },
+    { id: "history", icon: "📊", label: "History" },
+  ];
+
+  const inWorkout = tab === "strength" && view === "workout";
+  const inSession = tab === "mobility" && view === "session";
+
+  const getHeaderTitle = () => {
+    if (inWorkout) return `${strengthPlan.phases[workoutPhase].days[workoutDay].day} — ${strengthPlan.phases[workoutPhase].days[workoutDay].type}`;
+    if (inSession) return activeSession?.label;
+    if (tab === "home") return "Training Hub";
+    if (tab === "strength") return "Strength";
+    if (tab === "mobility") return "Mobility";
+    if (tab === "history") return "History";
+  };
+
+  const getHeaderSub = () => {
+    if (inWorkout) return `${strengthPlan.phases[workoutPhase].label} · ${strengthPlan.phases[workoutPhase].weeks}`;
+    if (inSession) return activeSession?.tag;
+    return null;
+  };
+
+  const getHeaderColor = () => {
+    if (inWorkout) return strengthPlan.phases[workoutPhase].color;
+    if (inSession) return activeSession?.color;
+    return D.text;
+  };
+
+  const handleBack = () => setView("list");
+
+  return (
+    <div style={{ minHeight: "100vh", background: D.bg, color: D.text, fontFamily: D.font, paddingBottom: 70, maxWidth: 480, margin: "0 auto" }}>
+
+      {/* Header */}
+      <div style={{ background: D.surface, borderBottom: `1px solid ${D.border}`, padding: "14px 16px", position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {(inWorkout || inSession) && (
+            <button onClick={handleBack} style={{ background: "none", border: "none", color: D.muted, cursor: "pointer", fontSize: 22, padding: 0, lineHeight: 1, flexShrink: 0 }}>←</button>
+          )}
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18, lineHeight: 1.1 }}>{getHeaderTitle()}</div>
+            {getHeaderSub() && (
+              <Mono style={{ fontSize: 9, color: getHeaderColor(), letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 2 }}>{getHeaderSub()}</Mono>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: "16px 14px" }}>
+        {tab === "home" && view === "list" && (
+          <HomeTab sHistory={sHistory} mHistory={mHistory}
+            onGoStrength={() => { setTab("strength"); setView("list"); }}
+            onGoMobility={() => { setTab("mobility"); setView("list"); }} />
+        )}
+        {tab === "strength" && view === "list" && <StrengthTab onStartWorkout={startWorkout} />}
+        {tab === "strength" && view === "workout" && (
+          <StrengthWorkout phaseIdx={workoutPhase} dayIdx={workoutDay}
+            onBack={handleBack} onComplete={handleComplete} />
+        )}
+        {tab === "mobility" && view === "list" && <MobilityTab onStartSession={startSession} />}
+        {tab === "mobility" && view === "session" && activeSession && (
+          <MobilitySession session={activeSession} onBack={handleBack} onComplete={handleComplete} />
+        )}
+        {tab === "history" && <HistoryTab sHistory={sHistory} mHistory={mHistory} />}
+      </div>
+
+      {/* Bottom Nav */}
+      <div style={{
+        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+        width: "100%", maxWidth: 480,
+        background: D.surface, borderTop: `1px solid ${D.border}`,
+        display: "grid", gridTemplateColumns: "repeat(4,1fr)", zIndex: 100,
+      }}>
+        {navItems.map(n => {
+          const active = tab === n.id;
+          const accentColor = n.id === "strength" ? D.amber : n.id === "mobility" ? D.tkdRed : n.id === "history" ? D.blue : D.text;
+          return (
+            <button key={n.id} onClick={() => { setTab(n.id); setView("list"); }} style={{
+              background: "none", border: "none", padding: "10px 4px 12px",
+              cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+            }}>
+              <span style={{ fontSize: 20, filter: active ? "none" : "grayscale(40%) opacity(0.45)" }}>{n.icon}</span>
+              <Mono style={{ fontSize: 8, color: active ? accentColor : D.muted, letterSpacing: 1, textTransform: "uppercase" }}>{n.label}</Mono>
+              {active && <div style={{ width: 16, height: 2, background: accentColor, borderRadius: 1 }} />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      const swBlob = new Blob(["\nconst CACHE = 'traininghub-v1';\nconst ASSETS = [\n  'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap',\n  'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'\n];\n\nself.addEventListener('install', e => {\n  e.waitUntil(\n    caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))\n  );\n  self.skipWaiting();\n});\n\nself.addEventListener('activate', e => {\n  e.waitUntil(\n    caches.keys().then(keys =>\n      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))\n    )\n  );\n  self.clients.claim();\n});\n\nself.addEventListener('fetch', e => {\n  e.respondWith(\n    caches.match(e.request).then(cached => {\n      if (cached) return cached;\n      return fetch(e.request).then(res => {\n        if (res && res.status === 200 && e.request.method === 'GET') {\n          const clone = res.clone();\n          caches.open(CACHE).then(c => c.put(e.request, clone));\n        }\n        return res;\n      }).catch(() => cached);\n    })\n  );\n});\n"], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(function() {});
+    }
+  </script>
+</body>
+</html>
