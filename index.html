@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Training Hub">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23111318'/><text x='90' y='125' font-size='96' text-anchor='middle'>🥋</text></svg>">
   <meta name="theme-color" content="#111318">
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlRyYWluaW5nIEh1YiIsCiAgInNob3J0X25hbWUiOiAiVHJhaW5pbmciLAogICJkZXNjcmlwdGlvbiI6ICJTdHJlbmd0aCAmIFRLRCBNb2JpbGl0eSBUcmFpbmluZyBBcHAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzExMTMxOCIsCiAgInRoZW1lX2NvbG9yIjogIiMxMTEzMTgiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCw8c3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDE5MiAxOTInPjxyZWN0IHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyByeD0nNDAnIGZpbGw9JyUyMzExMTMxOCcvPjx0ZXh0IHg9Jzk2JyB5PScxMzAnIGZvbnQtc2l6ZT0nMTAwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJz7wn6WLPC90ZXh0Pjwvc3ZnPiIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVHJhaW5pbmcgSHViIiwic2hvcnRfbmFtZSI6IlRyYWluaW5nIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxMTEzMTgiLCJ0aGVtZV9jb2xvciI6IiMxMTEzMTgiLCJvcmllbnRhdGlvbiI6InBvcnRyYWl0In0=">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23111318'/><text x='90' y='125' font-size='96' text-anchor='middle'>🥋</text></svg>">
   <title>Training Hub 🥋</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -520,18 +520,37 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
   const [logs, setLogs] = useState({});
   const [finished, setFinished] = useState(false);
   const [detailItem, setDetailItem] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  // Restore any previously saved set logs for this workout on mount
+  useEffect(() => {
+    const restore = async () => {
+      const restored = {};
+      for (let ei = 0; ei < day.exercises.length; ei++) {
+        for (let si = 0; si < day.exercises[ei].sets; si++) {
+          const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
+          try {
+            const r = await window.storage.get(key, false);
+            if (r?.value) restored[key] = Number(r.value);
+          } catch {}
+        }
+      }
+      setLogs(restored);
+      setLoaded(true);
+    };
+    restore();
+  }, [phaseIdx, dayIdx]);
 
   const totalSets = day.exercises.reduce((a, e) => a + e.sets, 0);
   const doneSets = Object.keys(logs).length;
   const pct = totalSets > 0 ? (doneSets / totalSets) * 100 : 0;
-  const allDone = doneSets === totalSets;
 
   const handleSave = (ei, si, reps) => {
     const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
     setLogs(prev => ({ ...prev, [key]: reps }));
     try { window.storage.set(key, String(reps), false); } catch {}
     const ex = day.exercises[ei];
-    rest.start(ex.restType === "heavy" ? 120 : ex.restType === "hold" ? 60 : ex.rest || 90);
+    rest.start(ex.restType === "heavy" ? 150 : ex.rest || 90);
   };
 
   const handleFinish = async () => {
@@ -541,6 +560,12 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
       label: `${day.day} — ${day.type}`, sub: ph.label, sets: doneSets, total: totalSets, color,
     };
     await saveKey(SK.strengthHist, [entry, ...prev].slice(0, 40));
+    // Clear saved set logs for this workout now it's completed
+    for (let ei = 0; ei < day.exercises.length; ei++) {
+      for (let si = 0; si < day.exercises[ei].sets; si++) {
+        try { await window.storage.delete(SK.strengthSet(phaseIdx, dayIdx, ei, si), false); } catch {}
+      }
+    }
     setFinished(true);
     onComplete();
   };
@@ -551,6 +576,12 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
       <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Workout Done!</div>
       <div style={{ color: D.muted, marginBottom: 28 }}>{doneSets}/{totalSets} sets logged</div>
       <button onClick={onBack} style={pill(color, "#fff")}>← Back to Plan</button>
+    </div>
+  );
+
+  if (!loaded) return (
+    <div style={{ textAlign: "center", padding: "60px 20px", color: D.muted }}>
+      <Mono style={{ fontSize: 12 }}>Loading...</Mono>
     </div>
   );
 
@@ -577,7 +608,7 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
             <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: D.faint, borderRadius: 4, padding: "2px 8px" }}>
                 <Mono style={{ fontSize: 9, color: D.muted }}>
-                  ⏱ {ex.restType === "heavy" ? "2 min rest" : ex.restType === "hold" ? "60s rest" : "90s rest"}
+                  ⏱ {ex.restType === "heavy" ? "2m 30s rest" : "90s rest"}
                 </Mono>
               </div>
               {ex.cues && (
@@ -600,11 +631,24 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
         </Card>
       ))}
 
-      {allDone && (
-        <button onClick={handleFinish} style={{ width: "100%", background: color, color: "#fff", border: "none", borderRadius: 10, padding: "15px", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: D.font, marginTop: 4, marginBottom: 80 }}>
-          ✓ Complete Workout
+      {/* Complete button — always visible, shows progress if not all sets done */}
+      <div style={{ marginTop: 8, marginBottom: 80 }}>
+        {doneSets < totalSets && (
+          <div style={{ textAlign: "center", marginBottom: 10 }}>
+            <Mono style={{ fontSize: 10, color: D.muted }}>{totalSets - doneSets} sets remaining — you can still complete the workout</Mono>
+          </div>
+        )}
+        <button onClick={handleFinish} style={{
+          width: "100%", border: "none", borderRadius: 10, padding: "15px",
+          fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: D.font,
+          background: doneSets === totalSets ? color : D.surface2,
+          color: doneSets === totalSets ? "#fff" : D.muted,
+          borderTop: `2px solid ${doneSets === totalSets ? color : D.border}`,
+        }}>
+          {doneSets === totalSets ? "✓ Complete Workout" : `Complete Workout (${doneSets}/${totalSets} sets)`}
         </button>
-      )}
+      </div>
+
       <RestOverlay secs={rest.secs} running={rest.running} progress={rest.progress} color={color} onSkip={rest.stop} />
       <ExerciseDetailModal item={detailItem} color={color} onClose={() => setDetailItem(null)} />
     </div>
@@ -1280,12 +1324,10 @@ function App() {
 
     ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
   </script>
-
   <script>
     if ('serviceWorker' in navigator) {
-      const swBlob = new Blob(["\nconst CACHE = 'traininghub-v1';\nconst ASSETS = [\n  'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap',\n  'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'\n];\n\nself.addEventListener('install', e => {\n  e.waitUntil(\n    caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))\n  );\n  self.skipWaiting();\n});\n\nself.addEventListener('activate', e => {\n  e.waitUntil(\n    caches.keys().then(keys =>\n      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))\n    )\n  );\n  self.clients.claim();\n});\n\nself.addEventListener('fetch', e => {\n  e.respondWith(\n    caches.match(e.request).then(cached => {\n      if (cached) return cached;\n      return fetch(e.request).then(res => {\n        if (res && res.status === 200 && e.request.method === 'GET') {\n          const clone = res.clone();\n          caches.open(CACHE).then(c => c.put(e.request, clone));\n        }\n        return res;\n      }).catch(() => cached);\n    })\n  );\n});\n"], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).catch(function() {});
+      const swBlob = new Blob(["\nconst CACHE = 'traininghub-v2';\nconst ASSETS = [\n  'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap',\n  'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'\n];\nself.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))); self.skipWaiting(); });\nself.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });\nself.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(cached => { if (cached) return cached; return fetch(e.request).then(res => { if (res && res.status === 200 && e.request.method === 'GET') { const clone = res.clone(); caches.open(CACHE).then(c => c.put(e.request, clone)); } return res; }).catch(() => cached); })); });\n"], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(function() {});
     }
   </script>
 </body>
