@@ -15,31 +15,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #111318; }
-    body { -webkit-font-smoothing: antialiased; overscroll-behavior: none; color: #f0f0f5; }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    input[type=number] { -moz-appearance: textfield; }
-    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #111318; } ::-webkit-scrollbar-thumb { background: #2e3140; border-radius: 2px; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;background:#111318;}
+    body{-webkit-font-smoothing:antialiased;overscroll-behavior:none;color:#f0f0f5;}
+    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+    input[type=number]{-moz-appearance:textfield;}
+    ::-webkit-scrollbar{width:4px;};::-webkit-scrollbar-track{background:#111318;};::-webkit-scrollbar-thumb{background:#2e3140;border-radius:2px;}
   </style>
 </head>
 <body>
   <div id="root"></div>
   <script>
-    (function() {
-      var mem = {};
-      try {
-        for (var i = 0; i < localStorage.length; i++) {
-          var k = localStorage.key(i);
-          if (k && k.startsWith('tkdhub__')) mem[k.slice(8)] = localStorage.getItem(k);
-        }
-      } catch(e) {}
-      window.storage = {
-        get: function(key) { return Promise.resolve(mem[key] !== undefined ? { key: key, value: mem[key] } : null); },
-        set: function(key, value) { mem[key] = value; try { localStorage.setItem('tkdhub__' + key, value); } catch(e) {} return Promise.resolve({ key: key, value: value }); },
-        delete: function(key) { delete mem[key]; try { localStorage.removeItem('tkdhub__' + key); } catch(e) {} return Promise.resolve({ key: key, deleted: true }); },
-        list: function(prefix) { return Promise.resolve({ keys: Object.keys(mem).filter(function(k) { return !prefix || k.startsWith(prefix); }) }); }
+    (function(){
+      var mem={};
+      try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith('tkdhub__'))mem[k.slice(8)]=localStorage.getItem(k);}}catch(e){}
+      window.storage={
+        get:function(key){return Promise.resolve(mem[key]!==undefined?{key:key,value:mem[key]}:null);},
+        set:function(key,value){mem[key]=value;try{localStorage.setItem('tkdhub__'+key,value);}catch(e){}return Promise.resolve({key:key,value:value});},
+        delete:function(key){delete mem[key];try{localStorage.removeItem('tkdhub__'+key);}catch(e){}return Promise.resolve({key:key,deleted:true});},
+        list:function(prefix){return Promise.resolve({keys:Object.keys(mem).filter(function(k){return!prefix||k.startsWith(prefix);})}); }
       };
     })();
   </script>
@@ -70,48 +64,49 @@ const D = {
   gold: "#f59e0b", cyan: "#06b6d4",
 };
 
-// ─── STRENGTH DATA — Upper/Lower Split ────────────────────────────────────────
-// Week A: Upper1 → Lower1 → Upper2   |   Week B: Lower2 → Upper1 → Lower1
-// Equipment: Barbell · Squat rack · Bench · Pull-up bar · Rings
-//            Bands · DBs (2.5/5/7.5kg) · KBs (4–12kg)
+// ─── STRENGTH DATA — 4-Day Torso / Legs / Accessory / Full Body ───────────────
+// Day 1: Torso · Day 2: Legs · Day 3: Accessory · Day 4: Full Body
+// Equipment: Barbell · Squat rack · Adjustable bench · Pull-up bar · Rings · Bands
+//            DBs (2.5/5/7.5kg) · KBs (4–12kg)
+// Weekly targets: Chest ~16 · Back ~15 · Biceps ~12 · Triceps ~10 · Glutes ~17 · Shoulders ~15
 const strengthPlan = {
   phases: [
     {
       phase: "Phase 1", label: "Foundations", weeks: "Wks 1–4", color: D.amber,
-      goal: "Build technique on all main lifts. Moderate loads — stop 3 reps from failure. Form first.",
+      goal: "Build technique on all lifts. Moderate loads — stop 3 reps from failure. Form first.",
       days: [
-        { day: "Upper 1", type: "Push Focus", exercises: [
-          { name: "Barbell Bench Press", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "30–40kg total. Feet flat, blades retracted, bar to lower chest.", muscles: "Chest · Shoulders · Triceps", cues: ["Eyes under the bar, grip just wider than shoulder-width", "Retract shoulder blades into the bench — stay pinched throughout", "Lower to lower chest over 2–3 seconds — light touch before pressing", "Press explosively, bar path angled slightly back toward rack", "Wrists straight, elbows at ~45° — not flared, not tucked"] },
-          { name: "DB Chest Fly", sets: 3, target: "12–15", rest: 90, notes: "5–7.5kg. Flat bench. Wide arc, fixed elbow bend. Pure chest stretch.", muscles: "Chest · Front delts", cues: ["Lie flat, dumbbells above chest, palms facing each other", "Soft fixed elbow bend throughout — don't let arms straighten", "Lower in a wide arc until you feel a deep chest stretch at bench level", "Squeeze chest to bring dumbbells back together at the top", "Think hugging a barrel — the arc is the movement, not a press"] },
-          { name: "Barbell Skull Crusher", sets: 3, target: "10–12", rest: 90, notes: "10–15kg total. Flat bench. Narrow grip, elbows fixed, lower to forehead.", muscles: "Triceps (long head emphasis)", cues: ["Grip bar narrow — hands ~20cm apart, arms above chest", "Elbows point to ceiling and stay fixed throughout", "Lower bar toward forehead by bending only at the elbows", "Stop just before touching, press back to full extension", "Upper arms completely still — only forearms move"] },
-          { name: "DB Shoulder Press", sets: 3, target: "10–12", rest: 90, notes: "7.5kg each. Full range — lower to ear height each rep.", muscles: "Shoulders · Triceps", cues: ["Dumbbells at shoulder height, palms forward", "Press overhead to full extension", "Lower slowly over 2–3 seconds to ear height", "Core braced — no arching the lower back", "Full range every rep — ear height at bottom, lockout at top"] },
-          { name: "DB Lateral Raise", sets: 3, target: "12–15", rest: 60, notes: "5kg. 2s up, 3s down. Side delts respond to slow eccentrics.", muscles: "Side deltoids", cues: ["Slight elbow bend, raise to shoulder height", "Lead with the back of your hands — not palms", "Lower over 3 full seconds", "5kg strict is harder than 7.5kg cheated — keep it strict", "This is your side delt foundation set"] },
-          { name: "Pull-Up / Band-Assisted", sets: 3, target: "5–8", rest: 90, restType: "heavy", notes: "Pull work on push day keeps weekly frequency high. Band if needed.", muscles: "Lats · Biceps · Rear delts", cues: ["Dead hang start — arms fully extended", "Pull elbows down and back — chest to the bar", "Chin clears the bar at the top", "Lower over 3 seconds — eccentric matters", "Use the thickest band that lets you hit 5 clean reps"] },
-          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Band at face height. Shoulder health maintenance on every upper day.", muscles: "Rear delts · Rotator cuff", cues: ["Anchor at face height, elbows high and wide", "Hands separate to ears — hold 1 second", "Light band, focus on the squeeze", "This is shoulder insurance — never skip it", "2 sets here, 2 on Upper 2 = 4 sets weekly minimum"] },
+        { day: "Day 1", type: "Torso — Chest & Back", exercises: [
+          { name: "Ring Push-Up (Feet Elevated)", sets: 4, target: "8–12", rest: 90, notes: "Feet on bench, rings low. Elevated feet increase upper chest activation. Turn rings out at the top.", muscles: "Chest · Shoulders · Triceps · Stabilisers", cues: ["Place feet on bench behind you, hands in rings at floor level", "Keep core completely rigid — no sagging hips throughout", "Lower chest below ring level for a deep stretch", "Turn rings slightly out at the top (RTO) for a harder chest squeeze", "Control the instability — this is what drives the extra activation"] },
+          { name: "Ring Row (Horizontal)", sets: 4, target: "8–12", rest: 90, notes: "Body fully horizontal. Pull rings to ribcage. Shoulder blades together at peak.", muscles: "Lats · Biceps · Rear delts · Core", cues: ["Rings at knee height, body fully horizontal, heels on floor", "Pull rings toward your ribcage — not your chest", "Imagine trying to touch your shoulder blades together behind your back at the peak", "Hold the squeeze for 1 second at the top", "Lower fully over 2–3 seconds — full range every rep"] },
+          { name: "Barbell Bench Press", sets: 4, target: "10–12", rest: 120, restType: "heavy", notes: "Moderate load. Pause 1 second just above chest — kills momentum and increases muscle demand.", muscles: "Chest · Shoulders · Triceps", cues: ["Eyes under bar, grip just wider than shoulder-width, blades retracted", "Lower bar to lower chest, pause 1 second just above the chest", "Drive heels into the floor to stabilise your torso", "Press explosively out of the pause", "Bar path angles slightly back toward rack at the top"] },
+          { name: "Band-Assisted Pull-Up", sets: 4, target: "8–10", rest: 90, restType: "heavy", notes: "Use enough band tension to hit the rep range. Focus on pulling elbows down, not chin up.", muscles: "Lats · Biceps · Rear delts", cues: ["Loop band over bar, place knees or feet in it", "Focus on pulling your elbows down toward your hips — not your chin toward the bar", "Chest should approach the bar at the top — not just chin over", "Lower slowly over 3 seconds — eccentric builds as much as concentric", "As band assistance becomes easy, switch to a thinner band"] },
+          { name: "DB Incline Press", sets: 3, target: "10–12", rest: 90, notes: "7.5kg each. Bench at 30–45°. Hits upper chest that flat bench misses.", muscles: "Upper chest · Shoulders · Triceps", cues: ["Set bench to 30–45° — steeper is more shoulder, flatter is more chest", "Hold dumbbells at chest height, palms forward, elbows at 45°", "Press up and slightly in — nearly touch at the top", "Lower slowly over 3 seconds — full stretch at the bottom is key", "Keep shoulder blades retracted throughout — don't let them wing off the bench"] },
+          { name: "DB Pullover", sets: 4, target: "12–15", rest: 90, notes: "Lie across bench. One dumbbell, both hands. Stop at forehead — keeps lats under constant tension.", muscles: "Lats · Chest · Serratus · Triceps", cues: ["Lie across the bench with only upper back supported, feet flat on floor", "Hold one dumbbell with both hands gripping the top plate, arms extended above chest", "Lower the dumbbell back over your head in an arc — stop when it reaches forehead level", "Drive with your elbows, not your hands — keeps the lats engaged", "Pull back up to the start — feel the lats contracting through the full arc"] },
+          { name: "Band Face Pull", sets: 3, target: "15–20", rest: 60, notes: "Band at face height. Elbows high. Rear delt and rotator cuff health after heavy pressing.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Anchor band at face height, grip both sides palms down", "Pull toward your forehead — not your chest", "At the back of the rep, try to show off your biceps — this ensures external rotation", "Elbows high and wide throughout", "Never skip — this protects your shoulders from the heavy pressing load"] },
         ]},
-        { day: "Upper 2", type: "Pull Focus", exercises: [
-          { name: "Barbell Bent-Over Row", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "Hinge to ~45°, overhand grip. Bar to lower chest. Hard squeeze at top.", muscles: "Lats · Rhomboids · Rear delts · Biceps", cues: ["Hinge until torso is ~45°, soft knees, core braced", "Overhand grip just outside shoulder-width", "Pull to lower chest — elbows drive back past torso", "Squeeze shoulder blades hard at the top of every rep", "2 seconds down, back flat throughout"] },
-          { name: "Barbell Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "40–50kg total. Bar over mid-foot, brace hard, drive the floor away.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Bar over mid-foot, hip-width stance, grip outside legs", "Shins near-vertical, back flat, shoulders over bar", "Big breath, brace core entirely before lifting", "Drive the floor away — think leg press not pull", "Hips and knees lock together at top — no hyperextension"] },
-          { name: "DB Reverse Fly", sets: 3, target: "12–15", rest: 60, notes: "5kg. Hinge forward, arms out to sides. Rear delts and upper back.", muscles: "Rear delts · Rhomboids · Traps", cues: ["Hinge at hips until torso is near-parallel to floor", "Hold dumbbells below chest, soft elbow bend", "Raise both arms out to the sides — squeeze shoulder blades together", "Lower slowly over 2–3 seconds", "This is the rear delt isolation — crucial for balanced shoulders"] },
-          { name: "Barbell Shrug", sets: 3, target: "10–12", rest: 60, notes: "Moderate load. Straight up — no rolling. Hold at top 1–2s.", muscles: "Traps · Upper back", cues: ["Hold barbell at hip height, overhand grip shoulder-width", "Shrug straight up toward your ears — no rolling forward or back", "Hold the top position for 1–2 seconds every rep", "Lower slowly — full stretch at the bottom", "Traps respond to heavy load and slow eccentrics — don't rush"] },
-          { name: "DB Bicep Curl", sets: 3, target: "10–12", rest: 60, notes: "7.5kg each. Strict — elbows pinned, 3s eccentric.", muscles: "Biceps · Brachialis", cues: ["Elbows pinned to sides throughout", "Curl to shoulders, hard squeeze at top", "Lower over 3 full seconds", "No swinging — drop to 5kg if form breaks", "Alternate arms if bilateral form breaks down"] },
-          { name: "Barbell Curl", sets: 3, target: "10–12", rest: 60, notes: "10–15kg total. Both hands supinated. Different stimulus to DB curl.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip just outside hip-width, palms up, elbows pinned", "Curl to shoulder height, hard squeeze at top", "Lower over 3 seconds", "Barbell locks both hands in supination throughout", "Second bicep exercise — push last 2 reps hard"] },
-          { name: "DB Chest Fly", sets: 2, target: "12–15", rest: 90, notes: "Chest on pull day spreads weekly volume. Same technique as Upper 1.", muscles: "Chest · Front delts", cues: ["Flat bench, same technique as Upper 1", "Wide arc, fixed elbow bend, deep stretch at bottom", "Squeeze chest to bring dumbbells back up", "Chest is fresher here than after bench — use that", "2 sets here + 3 on Upper 1 = 5 sets chest weekly"] },
-          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Shoulder health on every upper day.", muscles: "Rear delts · Rotator cuff", cues: ["Anchor at face height, pull to face with elbows high", "Hands separate to ears, hold 1 second at peak", "Focus on rear delt squeeze not arm pull", "Never skip on upper days", "Consistent volume here prevents most pressing injuries"] },
+        { day: "Day 2", type: "Legs — Hamstring & Glute Focus", exercises: [
+          { name: "Barbell Back Squat", sets: 4, target: "10–12", rest: 120, restType: "heavy", notes: "3-1-1-0 tempo. Lower slowly, pause at the very bottom, drive up smoothly.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Bar on upper traps, feet shoulder-width, toes out 20–30°", "Lower over 3 full seconds — controlled throughout", "Pause completely at the very bottom — the hole — for 1 full second", "Drive up smoothly — don't bounce out of the pause", "Keep chest up throughout — don't let it cave forward as you fatigue"] },
+          { name: "Barbell SLDL (Deficit)", sets: 4, target: "10–12", rest: 120, restType: "heavy", notes: "Stand on a weight plate. Bar inches from shins. Lower until massive hamstring stretch.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Stand on a weight plate or step to increase the range of motion", "Soft knee bend, hinge at hips — push them back toward the wall behind you", "Keep bar inches from your shins throughout the entire movement", "Lower until you feel a massive hamstring stretch — back stays flat", "Drive hips forward to stand, squeezing glutes hard at lockout"] },
+          { name: "Ring Hamstring Curl", sets: 4, target: "8–12", rest: 90, notes: "Lie on floor, heels in rings. Hips high, glutes squeezed. Curl heels toward glutes.", muscles: "Hamstrings · Glutes", cues: ["Lie on your back, heels resting in the rings, arms at sides for stability", "Drive hips up and keep them high — glutes squeezed throughout", "Curl heels toward your glutes by bending the knees", "Do not let your hips drop toward the floor as you extend your legs back out", "The hardest part is keeping hips elevated when legs extend — that's where it works"] },
+          { name: "KB Bulgarian Split Squat", sets: 4, target: "8–10 each", rest: 90, notes: "12kg KB at chest. Keep front shin vertical. Drop back knee straight down.", muscles: "Quads · Glutes · Hamstrings", cues: ["Hold KB by the horns at chest, rear foot on bench, laces down", "Keep your front shin vertical throughout — step further forward if knee drifts", "Think about dropping your back knee straight down to the floor", "Drive through the front heel to stand", "Squeeze the front glute hard at the top of every rep"] },
+          { name: "Barbell Hip Thrust", sets: 4, target: "12–15", rest: 90, notes: "Upper back on bench. 2-second hard squeeze at top. Chin tucked to prevent lower back arching.", muscles: "Glutes · Hamstrings", cues: ["Upper back on bench, barbell across hips with pad, feet flat hip-width", "Drive hips up by squeezing glutes as hard as possible", "2-second hard squeeze at the top — this is where glute development happens", "Tuck your chin to your chest to prevent your lower back from arching", "Lower hips almost to floor and repeat — no rest between reps"] },
+          { name: "Standing Calf Raise", sets: 3, target: "15–20", rest: 60, notes: "Barbell on traps or DBs at sides. Full range — maximum stretch at bottom.", muscles: "Calves (gastrocnemius · soleus)", cues: ["Lower heels as far as possible — full stretch at bottom", "Rise onto toes as high as possible — hard squeeze at top", "2 seconds up, 3 seconds down — slow eccentric is key", "Never partial reps — full range is what grows calves", "Push last set to failure"] },
         ]},
-        { day: "Lower 1", type: "Quad Focus", exercises: [
-          { name: "Barbell Back Squat", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "30–40kg total. Squat leads — legs fresh for the heaviest movement.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Bar on upper traps, feet shoulder-width, toes out 20–30°", "Big breath and brace before every rep", "Sit back and down — chest up, knees over toes", "Thighs parallel or below — full depth every rep", "Drive through whole foot, squeeze glutes at top"] },
-          { name: "Barbell Sumo Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "Posterior chain warm from squats. Wide stance, toes 45°, grip inside.", muscles: "Glutes · Inner thighs · Hamstrings · Back", cues: ["Wide stance outside hip-width, toes out 45°", "Grip bar inside legs, roughly shoulder-width", "Hips closer to bar than conventional — glute dominant", "Brace hard, push knees out over toes as you drive", "Bar drags up inner legs to lockout"] },
-          { name: "KB Romanian Deadlift", sets: 3, target: "10–12", rest: 90, notes: "12kg KBs. Hamstring isolation after the heavy compounds.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold KBs in front, feet hip-width, soft knees", "Hinge at hips — push them back as you lower bells", "Lower until strong hamstring stretch — back flat", "Drive hips forward, squeeze glutes hard at top", "Not a squat — depth from hip hinge not knee bend"] },
-          { name: "KB Bulgarian Split Squat", sets: 3, target: "8–10 each", rest: 90, notes: "12kg at chest. Rear foot on bench. Unilateral glute finisher.", muscles: "Quads · Glutes · Hamstrings", cues: ["KB by horns at chest, stand 2 feet from bench", "Rear foot on bench laces down", "Lower back knee toward floor, controlled descent", "Front shin roughly vertical — step forward if knee caves", "Drive through front heel, squeeze glute hard at top"] },
-          { name: "Standing Calf Raise", sets: 3, target: "15–20", rest: 60, notes: "Barbell on traps or hold DBs. Full range — stretch at bottom.", muscles: "Calves (gastrocnemius · soleus)", cues: ["Stand on a step or flat floor, barbell on traps or DBs at sides", "Lower heels as far as possible — full stretch at the bottom", "Rise onto toes as high as possible — squeeze at the top", "2 seconds up, 3 seconds down — slow eccentric", "Calves respond to high reps and full range — never partial reps"] },
+        { day: "Day 3", type: "Accessory — Shoulders, Arms", exercises: [
+          { name: "Barbell Overhead Press", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Strict press — no leg drive. Squeeze glutes to prevent leaning back. Press close to face.", muscles: "Shoulders · Triceps · Upper chest", cues: ["Grip just outside shoulder-width, bar resting on upper chest", "Squeeze your glutes hard throughout — prevents leaning back", "Press the bar close to your face — it should almost graze your nose", "Lock out fully at the top — squeeze shoulders and triceps hard", "Lower slowly over 2–3 seconds back to the upper chest"] },
+          { name: "DB Lateral Raise", sets: 5, target: "12–15", rest: 60, notes: "5kg. Lean forward ~10°. Lead with elbows, push weights away toward the walls.", muscles: "Side deltoids", cues: ["Hold dumbbells at sides, lean forward roughly 10° at the hips", "Lead with your elbows — think about pushing the weights away toward the walls", "Raise to shoulder height — thumb side slightly lower than pinky side", "Lower over 3 full seconds — slow eccentric is where side delts grow", "5 sets — this is the highest volume exercise of the programme for side delts"] },
+          { name: "Ring Dips", sets: 3, target: "6–10", rest: 90, notes: "Elbows tucked. If rings are unstable, hug forearms against straps for stability.", muscles: "Triceps · Chest · Shoulders", cues: ["Support yourself on the rings, elbows locked at the start", "Keep elbows tucked close to your body throughout — not flared", "If rings wobble, press your forearms against the straps to create stability", "Lower until upper arms are parallel to the floor — full range", "Press back up to full lockout — squeeze triceps hard at the top"] },
+          { name: "Barbell Curl", sets: 4, target: "8–10", rest: 90, notes: "10–15kg total. Elbows pinned to sides. Primary bicep compound.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip just outside hip-width, palms up, elbows pinned to sides", "Curl to shoulder height — hard squeeze at the top", "Lower over 3 full seconds — slow eccentric builds the most size", "Barbell locks both hands in supination throughout the movement", "No swinging — if you need momentum the weight is too heavy"] },
+          { name: "Incline DB Curl", sets: 3, target: "10–12", rest: 60, notes: "Set bench to 45–60°. Sit back, arms hang behind body. Deep bicep stretch at bottom.", muscles: "Biceps (long head emphasis)", cues: ["Set the bench to 45–60° and sit back fully against it", "Let arms hang straight down behind your body — this is the stretched position", "Curl both dumbbells up without letting elbows drift forward", "The stretch at the bottom is the whole point — don't shortchange it", "Lower slowly over 3 seconds — feel the long head stretch on the way down"] },
+          { name: "Banded Tricep Pushdown", sets: 3, target: "15–20", rest: 60, notes: "Anchor band at top. Full lockout at bottom. Flare band out slightly to catch long head.", muscles: "Triceps", cues: ["Anchor band at door top, elbows pinned to sides — they must not move", "Push down to full lockout — squeeze the triceps hard at the bottom", "Flare the band out slightly at the finish to catch the long head of the tricep", "Return slowly over 2 seconds — control the eccentric", "High reps here — 15–20 is the target for tricep endurance and pump"] },
+          { name: "Band Face Pull", sets: 3, target: "15–20", rest: 60, notes: "Band at face height. Pull toward forehead. External rotation at the back of the rep.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Anchor at face height, pull toward your forehead", "At the back of the rep, show off your biceps — ensures external rotation of the shoulder", "Elbows high and wide throughout", "This balances the heavy OHP and ring dip pressing on this day", "Never skip — rear delts and rotator cuff health is cumulative"] },
         ]},
-        { day: "Lower 2", type: "Posterior Focus", exercises: [
-          { name: "Barbell Conventional Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "Heavier pull emphasis. Full reset between reps.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Bar over mid-foot, hip-width stance, same setup as Upper 2", "Treat each rep as a max attempt — full reset at the floor", "Brace maximally, drive floor away", "Bar grazes shins and thighs on the way up", "Full lockout — hips and knees together"] },
-          { name: "Barbell Back Squat (volume)", sets: 4, target: "8–10", rest: 90, notes: "10% lighter than Lower 1. Volume work — more reps, same depth.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Slightly lighter than Lower 1 — this is volume, not max effort", "Pause 1 second at the bottom — eliminate bounce", "Drive knees out on the way up — more glute recruitment", "Consistent depth every rep — don't cut it as you fatigue", "4 sets of 8–10 is a powerful hypertrophy stimulus"] },
-          { name: "KB Romanian Deadlift", sets: 4, target: "12", rest: 90, notes: "12kg KBs. Extra set vs Lower 1. Pause at bottom.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two KBs, feet hip-width", "Hinge deep — pause 1 second at bottom, full hamstring stretch", "Drive hips through explosively on the way up", "Each rep is a fresh hinge — don't rush the setup", "Extra set this day drives hamstring hypertrophy"] },
-          { name: "KB Bulgarian Split Squat", sets: 3, target: "8–10 each", rest: 90, notes: "12kg at chest. Same as Lower 1 — hits legs twice weekly.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup as Lower 1 — rear foot on bench, KB at chest", "Control every rep — 2 seconds down", "Don't let front knee collapse — drive it over toes", "Squeeze glute hard at the top", "Hitting this twice weekly is what drives glute development"] },
-          { name: "Standing Calf Raise", sets: 3, target: "15–20", rest: 60, notes: "Same as Lower 1. Calves trained twice weekly for growth.", muscles: "Calves (gastrocnemius · soleus)", cues: ["Full range — maximum stretch at bottom, maximum squeeze at top", "3 seconds down every rep — slow eccentric is key", "Calves are notoriously stubborn — twice weekly volume helps", "Don't bounce at the bottom — control the stretch", "High reps here — 15–20 minimum for calf hypertrophy"] },
+        { day: "Day 4", type: "Full Body — Performance", exercises: [
+          { name: "Weighted Pull-Up", sets: 4, target: "3–5", rest: 120, restType: "heavy", notes: "Max effort. Secure a DB between feet. Explosive up, controlled 2s down.", muscles: "Lats · Biceps · Rear delts", cues: ["Secure a dumbbell between your feet or ankles, or use a weight belt", "Pull with explosive intent — maximum effort on every rep", "Chest approaches the bar at the top — full range", "Lower with a controlled 2-second count — don't drop", "These are max effort sets — leave nothing in the tank"] },
+          { name: "Barbell SLDL (Deficit)", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Same as Day 2. Focus on pushing hips back toward the wall behind you.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Stand on weight plate, same setup as Day 2", "Focus specifically on pushing your hips back toward the wall behind you", "This cue loads the hamstrings more effectively than thinking about the bar", "Keep bar close to shins, back flat throughout", "Drive hips forward to lockout — hard glute squeeze at the top"] },
+          { name: "Ring Deficit Push-Up", sets: 4, target: "10–12", rest: 90, notes: "Lower chest past ring level. Deep stretch is the main driver for chest growth here.", muscles: "Chest · Shoulders · Triceps · Stabilisers", cues: ["Rings at floor level, get into push-up position with body horizontal", "Lower your chest past the level of the rings — this deep stretch drives chest growth", "This extra range of motion is the whole point of using rings over a bench", "Press back up to full lockout, turn rings out (RTO) at the top", "The depth you reach is your progress metric — track it"] },
+          { name: "Barbell Back Squat", sets: 4, target: "12–15", rest: 90, notes: "Higher rep finisher. Maintain 3-1-1-0 tempo even as you fatigue. Quality over speed.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Same setup as Day 2 — bar on traps, feet shoulder-width", "Maintain the 3-1-1-0 tempo even as reps get hard — quality over speed", "Higher rep range here — this is volume work, not max effort", "Full depth every rep — no cutting range as you fatigue", "Last set should be genuinely close to failure"] },
+          { name: "Band Face Pull", sets: 4, target: "15–20", rest: 60, notes: "Pull toward forehead. Show off your biceps at the back. Third face pull session this week.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Pull toward your forehead — not toward your chest", "Show off your biceps at the back of the rep — external rotation is the key", "Elbows high and wide throughout", "4 sets on this day — highest face pull volume of the week", "Consistent rear delt work across all 4 days is what prevents shoulder injury long term"] },
         ]},
       ]
     },
@@ -119,38 +114,38 @@ const strengthPlan = {
       phase: "Phase 2", label: "Hypertrophy", weeks: "Wks 5–10", color: D.orange,
       goal: "More volume, more load. Train each set to 1–2 reps from failure. This is where muscle is built.",
       days: [
-        { day: "Upper 1", type: "Push Focus", exercises: [
-          { name: "Barbell Bench Press (paused)", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Pause 1s on chest — eliminates stretch reflex.", muscles: "Chest · Shoulders · Triceps", cues: ["Same setup — blades pinched, feet flat, small arch", "Lower over 2–3 seconds, pause 1 full second on chest", "Paused reps force true muscle strength — no bouncing", "Press explosively out of the pause", "Safety pins — don't work this close to failure without them"] },
-          { name: "DB Chest Fly (3s eccentric)", sets: 3, target: "12–15", rest: 90, notes: "5–7.5kg. 3s lowering. Maximum chest stretch.", muscles: "Chest · Front delts", cues: ["Lower in wide arc over 3 full seconds — feel the chest stretching", "Hold 1 second at bottom before squeezing back up", "Fixed elbow bend throughout", "3s eccentric makes this one of the best chest isolation movements", "The stretch at the bottom is where chest hypertrophy happens"] },
-          { name: "Barbell Skull Crusher", sets: 3, target: "10–12", rest: 90, notes: "Add 2.5kg vs Phase 1. Same strict form.", muscles: "Triceps (long head emphasis)", cues: ["Narrow grip, elbows fixed to ceiling", "Lower to forehead over 2–3 seconds", "Press to full extension, hard squeeze at top", "Slightly heavier — add 2.5kg if Phase 1 felt easy", "Upper arms completely still"] },
-          { name: "DB Shoulder Press", sets: 3, target: "10–12", rest: 90, notes: "7.5kg. Volume maintained — more pressing volume elsewhere this phase.", muscles: "Shoulders · Triceps", cues: ["Full range — ear height at bottom, lockout at top", "More chest work before this — shoulders may fatigue faster", "Keep reps clean — no back arch to compensate", "2–3 second eccentric", "Maintain 7.5kg and add reps before adding weight"] },
-          { name: "DB Lateral Raise (3s eccentric)", sets: 4, target: "12–15", rest: 60, notes: "5kg. Extra set vs Phase 1. Volume drives side delt growth.", muscles: "Side deltoids", cues: ["One more set than Phase 1 — this extra volume is the growth driver", "2s raise, 3s lower — strict every rep", "By set 4 the shoulder should be burning", "Don't shrug or lean to compensate", "4 sets here + 3 on Upper 2 = 7 sets weekly"] },
-          { name: "Pull-Up (weighted)", sets: 3, target: "5–8", rest: 90, restType: "heavy", notes: "Add 4–6kg KB between feet if 8 unassisted is easy.", muscles: "Lats · Biceps · Rear delts", cues: ["Add weight if 8 unassisted feels comfortable", "Dead hang start, pull chest to bar", "3-second eccentric every rep", "Track reps — adding 1 per week is solid progress", "Pull-ups on push day keeps lats getting 2x weekly stimulus"] },
-          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Never skip. Shoulder health is cumulative.", muscles: "Rear delts · Rotator cuff", cues: ["Elbows high and wide, separate hands to ears", "1-second hold at peak", "Focus on rear delt not arm pull", "This phase has more bench — face pulls matter more", "2 sets per upper session = 4 weekly minimum"] },
+        { day: "Day 1", type: "Torso — Chest & Back", exercises: [
+          { name: "Ring Push-Up (Feet Elevated, RTO)", sets: 4, target: "10–12", rest: 90, notes: "Hold RTO for 1 second at top every rep. More chest activation than Phase 1.", muscles: "Chest · Shoulders · Triceps · Stabilisers", cues: ["Feet on bench, rings low, same setup as Phase 1", "At the top, actively rotate rings out (RTO) and hold for 1 full second", "This 1s RTO hold dramatically increases chest and stabiliser activation", "Lower over 3 seconds — slow eccentric this phase", "Go to failure on the last set"] },
+          { name: "Ring Row (Horizontal, 4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "4s lowering this phase. Peak lat time under tension.", muscles: "Lats · Biceps · Rear delts · Core", cues: ["Same horizontal position as Phase 1", "Pull to ribcage, squeeze shoulder blades for 1 second at top", "Lower over 4 full seconds — this eccentric is where lat size is built", "Full extension at the bottom before each rep", "4s eccentric ring rows are highly effective for back development"] },
+          { name: "Barbell Bench Press (paused)", sets: 4, target: "10–12", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Pause 1 full second on chest this phase.", muscles: "Chest · Shoulders · Triceps", cues: ["Add load vs Phase 1 — the pause makes this harder than it looks", "Lower to chest, pause 1 full second — dead stop on the chest", "Press explosively out of the pause", "Drive heels into floor throughout", "Safety pins if working close to failure"] },
+          { name: "Pull-Up (lighter band or unassisted)", sets: 4, target: "8–10", rest: 90, restType: "heavy", notes: "Thinner band than Phase 1, or attempt first unassisted reps.", muscles: "Lats · Biceps · Rear delts", cues: ["Switch to a thinner band this phase — or attempt unassisted", "Focus on pulling elbows down — chest to the bar", "Lower over 3 seconds — controlled eccentric every rep", "If you can do 8 unassisted, add a small weight next phase", "Track reps — adding 1 per week is solid progress"] },
+          { name: "DB Incline Press (3s eccentric)", sets: 3, target: "10–12", rest: 90, notes: "7.5kg. 3s lowering. Maximum upper chest stretch under load.", muscles: "Upper chest · Shoulders · Triceps", cues: ["Bench at 30–45°, lower over 3 full seconds", "Feel the full upper chest stretch at the bottom", "Press up explosively", "3s eccentric significantly increases stimulus vs Phase 1", "Keep shoulder blades retracted throughout"] },
+          { name: "DB Pullover (3s eccentric)", sets: 4, target: "12–15", rest: 90, notes: "3s lowering this phase. Maximum lat and chest stretch under load.", muscles: "Lats · Chest · Serratus · Triceps", cues: ["Lie across bench, same setup as Phase 1", "Lower over 3 full seconds — feel the lat and chest stretch at the bottom", "Drive with elbows to pull back up", "3s eccentric turns this into a highly effective lat and chest builder", "Stop at forehead level — going lower shifts too much load to the shoulders"] },
+          { name: "Band Face Pull", sets: 3, target: "15–20", rest: 60, notes: "Same as Phase 1. Never skip after heavy pressing.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Pull toward forehead, show biceps at the back — external rotation", "Elbows high and wide throughout", "More pressing volume this phase makes this even more important", "Focus on the squeeze — not the load", "3 sets every Day 1 is non-negotiable"] },
         ]},
-        { day: "Upper 2", type: "Pull Focus", exercises: [
-          { name: "Barbell Bent-Over Row (4s eccentric)", sets: 4, target: "8–10", rest: 90, notes: "Add 2.5–5kg vs Phase 1. Lower bar over 4 seconds.", muscles: "Lats · Rhomboids · Rear delts · Biceps", cues: ["Hinge to 45°, overhand, very tight brace", "Row to lower chest — 1-second squeeze at top", "Lower over 4 full seconds — eccentric overloads lats", "Back flat every rep — rounding under load risks injury", "Sets feel shorter than reps suggest — that's the eccentric working"] },
-          { name: "Barbell Deadlift", sets: 4, target: "5", rest: 120, restType: "heavy", notes: "Add 5kg vs Phase 1. Lower reps, heavier load.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Full reset between reps — no touch and go", "Treat every rep as near-max with the heavier load", "Bar stays in contact with legs the whole pull", "Brace more aggressively than Phase 1", "Hip and knee lockout together at top"] },
-          { name: "DB Reverse Fly (3s eccentric)", sets: 3, target: "12–15", rest: 60, notes: "5kg. 3s lowering. Rear delt volume increases this phase.", muscles: "Rear delts · Rhomboids · Traps", cues: ["Hinge until near-parallel, soft elbow bend", "Raise arms to sides, squeeze blades together at top", "Lower over 3 full seconds", "Extra set vs Phase 1 — rear delts need volume", "Keep hinge position consistent — torso shouldn't rise during the set"] },
-          { name: "Barbell Shrug", sets: 3, target: "10–12", rest: 60, notes: "Add load vs Phase 1. 2-second hold at top.", muscles: "Traps · Upper back", cues: ["Heavier than Phase 1 — add 5kg if Phase 1 felt comfortable", "Straight up shrug — no rolling", "Hold 2 seconds at top this phase", "Lower slowly — 3 seconds down", "Heavy shrugs with slow eccentrics are the best trap builder available"] },
-          { name: "DB Bicep Curl", sets: 3, target: "10–12", rest: 60, notes: "7.5kg. Elbows pinned, 3s eccentric.", muscles: "Biceps · Brachialis", cues: ["Elbows pinned, curl to shoulders, hard squeeze", "Lower over 3 full seconds", "No swinging — momentum kills the stimulus", "Alternate if bilateral breaks down", "Push last 2 reps hard — 1 from failure"] },
-          { name: "Barbell Curl (3s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "Add small load vs Phase 1. 3s eccentric.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip outside hip-width, palms up, elbows pinned", "Curl to shoulder height, hard squeeze at top", "Lower over 3 full seconds", "Locks both hands in supination — different stimulus to DBs", "Last set push to 1 from failure"] },
-          { name: "DB Chest Fly (3s eccentric)", sets: 2, target: "12–15", rest: 90, notes: "Chest on pull day. 3s eccentric this phase.", muscles: "Chest · Front delts", cues: ["Same technique — wide arc, fixed elbow bend", "3s lowering this phase, 1s hold at stretch", "Chest is fresh here — get a good stretch", "2 sets here + 3 on Upper 1 = 5 weekly chest sets", "Push last set close to failure"] },
-          { name: "Band Face Pull", sets: 2, target: "15–20", rest: 60, notes: "Heavy phase — shoulder health critical.", muscles: "Rear delts · Rotator cuff", cues: ["Full 15–20 reps — don't cut short", "Elbows high, hands separate to ears", "1-second peak hold", "Protecting shoulders from heavier bench and row loads", "Never skip on upper days"] },
+        { day: "Day 2", type: "Legs — Hamstring & Glute Focus", exercises: [
+          { name: "Barbell Back Squat", sets: 4, target: "10–12", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Same 3-1-1-0 tempo — heavier load increases stimulus.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Heavier than Phase 1 — the tempo makes this significantly harder under load", "3 seconds down, 1 second pause at the hole, drive up", "Don't cut depth as weight increases — full range is non-negotiable", "Push every set to 1–2 reps from failure", "Rest the full 2 minutes between sets — leg work demands it"] },
+          { name: "Barbell SLDL (Deficit, 4s eccentric)", sets: 4, target: "10–12", rest: 120, restType: "heavy", notes: "Add load vs Phase 1. Lower over 4 seconds. Peak hamstring time under tension.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Stand on plate, same setup — push hips back toward the wall", "Lower over 4 full seconds — feel every degree of hamstring stretch", "Pause 1 second at the bottom this phase", "Drive hips forward explosively to stand", "4s eccentric deficit SLDL is one of the best hamstring exercises possible"] },
+          { name: "Ring Hamstring Curl", sets: 4, target: "8–12", rest: 90, notes: "Hips high throughout. Add a 2s pause at the peak curl this phase.", muscles: "Hamstrings · Glutes", cues: ["Hips high and glutes squeezed before you start — don't let them drop", "Curl heels toward glutes, pause 2 seconds at peak", "Extend legs slowly over 2–3 seconds — control the eccentric", "The pause at the peak dramatically increases the stimulus", "If too easy, elevate your hips on a plate between sets"] },
+          { name: "KB Bulgarian Split Squat (3s eccentric)", sets: 4, target: "8–10 each", rest: 90, notes: "12kg KB. 3s lowering this phase. More glute and quad time under tension.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup — rear foot on bench, KB at chest", "Lower over 3 full seconds — complete control throughout", "Think about dropping back knee straight down to the floor", "Drive through front heel to stand, squeeze glute hard at top", "By set 4 glutes and quads should be significantly fatigued"] },
+          { name: "Barbell Hip Thrust (2s pause)", sets: 4, target: "12–15", rest: 90, notes: "Add load vs Phase 1. 2s pause at top every rep. Peak glute contraction.", muscles: "Glutes · Hamstrings", cues: ["Add load this phase — bar gets heavier as your glutes get stronger", "Drive up, pause 2 full seconds at the top — maximum glute squeeze", "Tuck chin to chest — prevents lower back arching under heavier load", "Lower slowly over 2 seconds — hips almost touch floor", "Don't hyperextend the lower back at the top — neutral spine only"] },
+          { name: "Standing Calf Raise (3s eccentric)", sets: 3, target: "15–20", rest: 60, notes: "3s lowering. Maximum calf time under tension.", muscles: "Calves", cues: ["Maximum stretch at bottom, maximum squeeze at top", "Lower over 3 full seconds — the eccentric is where calves grow", "Don't bounce at the bottom — dead stop before rising", "Push last set to failure — calves are resilient", "3s eccentric at full range is the optimal calf stimulus"] },
         ]},
-        { day: "Lower 1", type: "Quad Focus", exercises: [
-          { name: "Barbell Back Squat", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Higher reps = more hypertrophy stimulus.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Same setup — brace before every rep", "Pause 1 second at bottom — eliminate bounce, maximise depth", "Drive knees out hard on the way up", "Push every set to 1–2 reps from failure", "Higher reps mean more fatigue — stay tall throughout"] },
-          { name: "Barbell Sumo Deadlift", sets: 4, target: "5–6", rest: 120, restType: "heavy", notes: "Add 5kg vs Phase 1. Posterior chain warm from squats.", muscles: "Glutes · Inner thighs · Hamstrings · Back", cues: ["Wide stance, toes 45°, grip inside legs", "Heavier than Phase 1 — form must stay tight", "Push knees out aggressively over toes", "Bar drags up inner legs to lockout", "Brace harder than you think you need to"] },
-          { name: "KB Romanian Deadlift", sets: 4, target: "12", rest: 90, notes: "12kg KBs. Extra set vs Phase 1. Pause at bottom.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two KBs for more range and load", "Pause 1 second at bottom — full stretch", "Drive hips through explosively", "Each rep is a fresh hinge — don't rush", "Extra set this phase drives hamstring hypertrophy"] },
-          { name: "KB Bulgarian Split Squat", sets: 4, target: "10 each", rest: 90, notes: "12kg. More volume than Phase 1. Control every rep.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup — rear foot on bench, KB at chest", "Lower over 2–3 seconds controlled", "Don't let front knee collapse — drive out over toes", "Pause briefly at bottom before driving up", "By set 4 glutes and quads should be significantly fatigued"] },
-          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Extra set vs Phase 1. Full range every rep.", muscles: "Calves", cues: ["Maximum stretch at bottom, maximum squeeze at top", "3 seconds down — slow eccentric is key", "Don't bounce at the bottom", "4 sets total — calves need volume to grow", "Push last set to failure — calves are resilient"] },
+        { day: "Day 3", type: "Accessory — Shoulders, Arms", exercises: [
+          { name: "Barbell Overhead Press", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Add 2.5–5kg vs Phase 1. Strict press — no leg drive.", muscles: "Shoulders · Triceps · Upper chest", cues: ["Heavier than Phase 1 — squeeze glutes harder to stay strict", "Press close to face, lock out fully at the top", "Lower over 3 seconds this phase", "No leg drive — strict overhead press is what builds the shoulder", "This is your shoulder strength benchmark — track it"] },
+          { name: "DB Lateral Raise (3s eccentric)", sets: 5, target: "12–15", rest: 60, notes: "5kg. 3s lowering. Maximum side delt time under tension.", muscles: "Side deltoids", cues: ["Lean forward 10°, lead with elbows, push toward walls", "Lower over 3 full seconds — this is where side delts grow", "By set 5 the shoulder should be significantly burning", "5 sets at 3s eccentric is the highest side delt stimulus in the programme", "Don't shrug or lean to compensate — strict throughout"] },
+          { name: "Ring Dips (weighted if possible)", sets: 3, target: "6–10", rest: 90, notes: "Add weight between feet if 10 unweighted is easy.", muscles: "Triceps · Chest · Shoulders", cues: ["Elbows tucked, forearms against straps for stability", "Full range — upper arms parallel to floor at the bottom", "If adding weight, grip DB between crossed feet", "Press back to full lockout — hard tricep squeeze at top", "Adding weight when 10 reps feels comfortable is the progression"] },
+          { name: "Barbell Curl (3s eccentric)", sets: 4, target: "8–10", rest: 90, notes: "Add small load vs Phase 1. 3s eccentric — maximum bicep time under tension.", muscles: "Biceps · Brachialis · Forearms", cues: ["Elbows pinned, curl to shoulder height, hard squeeze at top", "Lower over 3 full seconds — no rushing", "Heavier than Phase 1 — add 2.5kg if Phase 1 felt comfortable", "Barbell locks both hands in supination throughout", "Push last set to 1 from failure"] },
+          { name: "Incline DB Curl (3s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "Bench at 45–60°. Arms hang behind body. 3s lowering for maximum long head stretch.", muscles: "Biceps (long head emphasis)", cues: ["Sit back on incline bench, arms hanging behind body", "Curl up without letting elbows drift forward", "Lower over 3 full seconds — feel the long head stretch at the bottom", "3s eccentric makes this the best bicep isolation exercise in the programme", "The deeper the stretch at the bottom, the more long head is stimulated"] },
+          { name: "Banded Tricep Pushdown", sets: 3, target: "15–20", rest: 60, notes: "Higher reps than Phase 1 target. Full lockout every rep.", muscles: "Triceps", cues: ["Elbows pinned to sides — they must not move", "Full lockout at bottom, flare band out slightly", "More reps this phase — 18–20 is the target", "Control the return — 2 seconds up", "Pump and burn at this rep range drives tricep hypertrophy"] },
+          { name: "Band Face Pull", sets: 3, target: "15–20", rest: 60, notes: "More pressing volume this phase — shoulder health more critical.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Pull toward forehead, show biceps at back of rep", "Elbows high and wide", "More OHP and dip volume this phase — this is more important than ever", "Focus on the external rotation at the back — that's the key movement", "3 sets every Day 3 — never skip"] },
         ]},
-        { day: "Lower 2", type: "Posterior Focus", exercises: [
-          { name: "Barbell Conventional Deadlift", sets: 4, target: "5", rest: 120, restType: "heavy", notes: "Add 5kg vs Phase 1. Heavy pull emphasis.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Full reset between reps — no touch and go", "Heavier weight demands more aggressive brace", "Bar stays in contact with legs the whole pull", "Hip and knee lockout together at top", "Treat every rep as near-max"] },
-          { name: "Barbell Back Squat (volume)", sets: 5, target: "8", rest: 90, notes: "10% lighter than Lower 1. 5×8 is the core hypertrophy stimulus.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["10% less than Lower 1 — volume work, not max effort", "5 sets demands pacing — don't burn out on set 1", "Consistent depth every set — film yourself to check", "Full 2 minutes rest between sets", "Volume beats ego — reduce weight if form breaks on set 4–5"] },
-          { name: "KB Romanian Deadlift", sets: 4, target: "12", rest: 90, notes: "12kg KBs. Same as Lower 1 — hamstrings twice weekly.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two KBs, same hinge technique", "Pause 1 second at bottom every rep", "Drive explosively through the hips", "Hamstrings twice weekly is what drives posterior chain development", "Push the last set to 1 from failure"] },
-          { name: "KB Bulgarian Split Squat", sets: 4, target: "10 each", rest: 90, notes: "12kg. Hitting legs twice weekly — this is the growth driver.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same setup — rear foot on bench, KB at chest", "2–3 seconds down, controlled every rep", "Drive front knee out over toes throughout", "Twice-weekly split squats = significant glute and quad development", "By set 4 you should be deeply fatigued — that's the point"] },
-          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Calves twice weekly. Full range non-negotiable.", muscles: "Calves", cues: ["Full range — don't shortchange the stretch", "3 seconds down, pause at bottom", "Rise to full tippy-toe height at top", "4 sets twice weekly is sufficient calf volume", "Push to failure on the last set"] },
+        { day: "Day 4", type: "Full Body — Performance", exercises: [
+          { name: "Weighted Pull-Up", sets: 4, target: "3–5", rest: 120, restType: "heavy", notes: "Add weight vs Phase 1. Explosive up, 2s down. Max effort every set.", muscles: "Lats · Biceps · Rear delts", cues: ["More weight than Phase 1 — add 2kg if Phase 1 felt manageable", "Explosive intent on every rep — pull as fast as you can", "Lower with controlled 2-second count", "Track weight and reps — adding 2kg when you hit top of rep range", "These are max effort sets — leave nothing in the tank"] },
+          { name: "Barbell SLDL (Deficit, 4s eccentric)", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Same as Day 2 this phase. Push hips back toward wall.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Same 4s eccentric as Day 2", "Push hips back toward wall — this cue loads hamstrings maximally", "Bar inches from shins throughout", "Pause 1 second at bottom", "Drive through hips to stand — hard glute squeeze at lockout"] },
+          { name: "Ring Deficit Push-Up (3s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "3s lowering this phase. Deeper stretch than Phase 1.", muscles: "Chest · Shoulders · Triceps · Stabilisers", cues: ["Lower chest past ring level over 3 full seconds", "The deeper the stretch, the more chest fibres are recruited", "Press back up to full lockout, RTO at top", "3s eccentric significantly increases chest stimulus over Phase 1", "Failure on last set — this is your chest finisher"] },
+          { name: "Barbell Back Squat", sets: 4, target: "12–15", rest: 90, notes: "Add load vs Phase 1. Same tempo — quality over speed.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Heavier than Phase 1 at the same rep range", "Maintain 3-1-1-0 tempo even as reps get hard", "Last set should be genuinely close to failure", "Full depth every rep — no cutting range as you fatigue", "Volume squatting at this weight is what builds legs"] },
+          { name: "Band Face Pull", sets: 4, target: "15–20", rest: 60, notes: "4 sets — highest face pull volume of the week. Heavy phase — shoulder protection critical.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Pull toward forehead, show biceps at the back", "Elbows high and wide", "4 sets this day — most face pull volume of the week", "Heavy pressing and pulling phase makes this critical", "Consistent rear delt work across all 4 days prevents shoulder injury long term"] },
         ]},
       ]
     },
@@ -158,38 +153,38 @@ const strengthPlan = {
       phase: "Phase 3", label: "Strength", weeks: "Wks 11–16", color: D.red,
       goal: "Heaviest loads of the programme. Lower reps on compounds. Push to 1 rep from failure on key sets.",
       days: [
-        { day: "Upper 1", type: "Push Focus", exercises: [
-          { name: "Barbell Bench Press (paused)", sets: 5, target: "4–5", rest: 150, restType: "heavy", notes: "Heaviest bench. Pause every rep. Safety pins essential.", muscles: "Chest · Shoulders · Triceps", cues: ["Tightest setup yet — blades harder, more leg drive", "Pause every rep — 1 full second on chest", "Bar speed slow on heaviest sets — keep fighting", "Safety pins or spotter — mandatory at this load", "Technique must be perfect — this is your strength benchmark"] },
-          { name: "DB Chest Fly (4s eccentric)", sets: 3, target: "12–15", rest: 90, notes: "5–7.5kg. 4s lowering. Peak chest stretch stimulus.", muscles: "Chest · Front delts", cues: ["Lower in wide arc over 4 full seconds", "Hold the stretched position 1 second at bottom", "4s eccentric after heavy paused bench is extremely effective", "Squeeze chest hard to bring dumbbells back up", "Fixed elbow bend — arms don't straighten"] },
-          { name: "Barbell Skull Crusher (4s eccentric)", sets: 3, target: "8–10", rest: 90, notes: "Heaviest yet. 4s lowering. Peak tricep stimulus.", muscles: "Triceps (long head emphasis)", cues: ["Add 2.5kg vs Phase 2 if comfortable", "Lower toward forehead over 4 full seconds", "Elbows fixed — only forearms move", "Hard squeeze at full extension", "4s eccentric skull crushers are peak tricep overload"] },
-          { name: "DB Shoulder Press (4s eccentric)", sets: 3, target: "8–10", rest: 90, notes: "7.5kg. 4s lowering. Peak shoulder load.", muscles: "Shoulders · Triceps", cues: ["Press overhead, lower over 4 full seconds", "Elbows track down and slightly forward", "Brief pause at shoulder height before pressing", "4s eccentric turns 7.5kg into serious stimulus", "Core braced — no lower back arch at all"] },
-          { name: "DB Lateral Raise (4s eccentric)", sets: 4, target: "12–15", rest: 60, notes: "5kg. 4s down. Maximum side delt time under tension.", muscles: "Side deltoids", cues: ["2s raise, 4s lower — count every second", "At 4s eccentric, 5kg is genuinely hard by rep 10", "No shrugging or torso lean — strictly controlled", "Side delts respond to TUT more than load", "4 sets here + 3 on Upper 2 = 7 weekly sets"] },
-          { name: "Weighted Pull-Up", sets: 3, target: "4–6", rest: 120, restType: "heavy", notes: "6–10kg KB. Heaviest pull-up of the programme.", muscles: "Lats · Biceps · Rear delts", cues: ["Dead hang — no kipping, no momentum", "Add weight via KB between feet or belt", "Pull chest to bar — full range", "Lower over 3–4 seconds — weighted eccentrics build lat size", "Add 2kg when you hit top of rep range"] },
-          { name: "Band Face Pull", sets: 2, target: "20", rest: 60, notes: "Full 20 every set. Heavy pressing phase — protection critical.", muscles: "Rear delts · Rotator cuff", cues: ["Full 20 reps — don't cut short in Phase 3", "Elbows high, hands to ears", "Add an extra set if any shoulder discomfort this week", "Most pressing injuries are prevented here", "Consistency beats intensity on this one"] },
+        { day: "Day 1", type: "Torso — Chest & Back", exercises: [
+          { name: "Ring Push-Up (Feet Elevated, RTO hold)", sets: 4, target: "10–12", rest: 90, notes: "Hold RTO 2s at top every rep. Peak chest and stabiliser activation.", muscles: "Chest · Shoulders · Triceps · Stabilisers", cues: ["Feet on bench, rings low", "At top, rotate rings out fully (RTO) and hold 2 full seconds", "2s RTO hold is the peak chest activation in this programme", "Lower over 3 seconds", "Go to failure on the last set — this is your chest finisher"] },
+          { name: "Ring Row (Horizontal, 4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "Heaviest ring row. 4s eccentric. 1s squeeze at top.", muscles: "Lats · Biceps · Rear delts · Core", cues: ["Body fully horizontal — this is the hardest ring row variation", "Pull to ribcage, 1-second hard squeeze at top", "Lower over 4 full seconds", "Full extension at bottom before each rep", "Control beats speed — 4s down every rep"] },
+          { name: "Barbell Bench Press (paused)", sets: 5, target: "6–8", rest: 150, restType: "heavy", notes: "Heaviest bench of programme. Pause every rep. Safety pins essential.", muscles: "Chest · Shoulders · Triceps", cues: ["Heaviest bench — tightest setup yet, blades harder, more leg drive", "Pause every rep — 1 full second dead stop on chest", "Bar speed slow on heaviest sets — keep fighting through", "Safety pins or spotter — mandatory at this load", "This is your chest strength benchmark"] },
+          { name: "Weighted Pull-Up", sets: 4, target: "5–8", rest: 120, restType: "heavy", notes: "Add 6–10kg. Replaces band-assisted this phase — full pulling strength.", muscles: "Lats · Biceps · Rear delts", cues: ["Add weight via KB between feet or belt", "Dead hang start — pull chest to bar with explosive intent", "Lower over 3 seconds — weighted eccentrics build lat size", "Full range every rep — chest to bar, not just chin", "Add 2kg when you hit the top of the rep range"] },
+          { name: "DB Incline Press (4s eccentric)", sets: 3, target: "8–10", rest: 90, notes: "7.5kg. 4s lowering. Peak upper chest stretch under load.", muscles: "Upper chest · Shoulders · Triceps", cues: ["Bench at 30–45°, lower over 4 full seconds", "Feel the full upper chest stretch at the bottom — don't rush it", "Press explosively back up", "4s eccentric after heavy bench is extremely effective", "Control and stretch are the focus — not load"] },
+          { name: "DB Pullover (4s eccentric)", sets: 4, target: "12–15", rest: 90, notes: "4s lowering. Peak lat and chest stretch stimulus.", muscles: "Lats · Chest · Serratus · Triceps", cues: ["Lie across bench, lower over 4 full seconds toward forehead", "Maximum stretch at the bottom — lats and chest fully loaded", "Drive with elbows back up — not hands", "4s eccentric pullover is one of the most effective lat isolation exercises available", "Stop at forehead level every rep"] },
+          { name: "Band Face Pull", sets: 3, target: "20", rest: 60, notes: "Full 20 every set. Heaviest pressing phase — shoulder protection most critical.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Full 20 reps — don't cut short in Phase 3", "Pull toward forehead, show biceps at back of rep", "Heaviest bench phase — this is more important than ever", "Add an extra set if any shoulder discomfort this week", "Never skip in Phase 3"] },
         ]},
-        { day: "Upper 2", type: "Pull Focus", exercises: [
-          { name: "Barbell Bent-Over Row (4s eccentric)", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "Heaviest row. 4s eccentric. Hard squeeze at top.", muscles: "Lats · Rhomboids · Rear delts · Biceps", cues: ["Hinge to 45°, aggressive brace", "1-second hard squeeze at top", "Lower over 4 full seconds — brutal and effective", "Back flat — rounding under this load risks injury", "Sets feel shorter than reps suggest — that's the eccentric"] },
-          { name: "Barbell Deadlift", sets: 5, target: "3–4", rest: 150, restType: "heavy", notes: "Heaviest deadlift. Treat every rep as a max attempt.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Max brace — lats, abs, glutes before bar leaves floor", "First inch is hardest — be patient, keep driving", "Bar grazes legs the whole way up", "Squeeze glutes at lockout — don't hyperextend", "Full reset between reps at this weight"] },
-          { name: "DB Reverse Fly (4s eccentric)", sets: 4, target: "12–15", rest: 60, notes: "5kg. 4s lowering. Extra set vs Phase 2. Peak rear delt.", muscles: "Rear delts · Rhomboids · Traps", cues: ["Near-parallel hinge, raise arms to sides", "Squeeze blades hard at top", "Lower over 4 full seconds", "Extra set this phase — rear delts need accumulated volume", "By set 4 rear delts should be burning"] },
-          { name: "Barbell Shrug (4s eccentric)", sets: 4, target: "10–12", rest: 60, notes: "Heaviest shrug. 2s hold, 4s lowering.", muscles: "Traps · Upper back", cues: ["Heaviest shrug of programme — add 5kg vs Phase 2", "Shrug straight up, hold 2 seconds", "Lower over 4 full seconds — max trap stretch at bottom", "Extra set vs Phase 2 for peak trap hypertrophy", "Loaded stretches on the eccentric drive trap growth"] },
-          { name: "DB Bicep Curl (4s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "7.5kg. Explosive curl, 4s down. Maximum bicep stimulus.", muscles: "Biceps · Brachialis", cues: ["Curl explosively — strict, no swinging", "Hard squeeze at top before lowering", "Lower over 4 full seconds — elbows pinned", "By rep 8–10 biceps should be intensely fatigued", "4s eccentrics are the most effective arm growth technique"] },
-          { name: "Barbell Curl (4s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "Heavier than Phase 2. 4s down. Peak bicep stimulus.", muscles: "Biceps · Brachialis · Forearms", cues: ["Grip outside hip-width, palms up, elbows pinned", "Curl explosively, hard squeeze at top", "Lower over 4 full seconds — strict throughout", "Locks both hands in supination — maximises bicep tension", "Last set — biceps and forearms both deeply fatigued"] },
-          { name: "DB Chest Fly (4s eccentric)", sets: 2, target: "12–15", rest: 90, notes: "4s eccentric. Chest twice weekly maintains volume in strength phase.", muscles: "Chest · Front delts", cues: ["Wide arc, 4s lowering, 1s hold at stretch", "Same technique as Upper 1", "2 sets here + 3 on Upper 1 = 5 chest sets weekly in Phase 3", "Chest is fresh here — get a full deep stretch", "Go to failure on the last set"] },
-          { name: "Band Face Pull", sets: 2, target: "20", rest: 60, notes: "Full 20. Heaviest phase — shoulder protection most critical.", muscles: "Rear delts · Rotator cuff", cues: ["Full 20 reps every set — Phase 3 has heaviest loads", "Elbows high and wide", "This is the most important 10 minutes of shoulder work you do", "Add a set if any discomfort during the week", "Never skip in Phase 3"] },
+        { day: "Day 2", type: "Legs — Hamstring & Glute Focus", exercises: [
+          { name: "Barbell Back Squat", sets: 5, target: "6–8", rest: 150, restType: "heavy", notes: "Heaviest squat of programme. 3-1-1-0 tempo maintained. Full depth non-negotiable.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Set up meticulously — this is your heaviest squat", "Brace harder than you think necessary", "3 seconds down, 1 second pause at the bottom — non-negotiable even at this weight", "Drive up as hard as possible out of the pause", "This is your leg strength benchmark — track it"] },
+          { name: "Barbell SLDL (Deficit, 4s eccentric)", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Heaviest SLDL of programme. 4s eccentric. Push hips back toward wall.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Heaviest load on the deficit SLDL — setup meticulously", "4 seconds down, 1 second pause at bottom", "Push hips back toward wall — maximum hamstring loading", "Drive hips forward explosively to stand", "This is your posterior chain strength benchmark"] },
+          { name: "Ring Hamstring Curl (2s pause)", sets: 4, target: "8–12", rest: 90, notes: "Hips high. 2s pause at peak curl. Peak hamstring contraction.", muscles: "Hamstrings · Glutes", cues: ["Hips high and glutes squeezed from the start", "Curl to full peak — pause 2 full seconds at the top", "Extend over 3 seconds — maximum eccentric control", "Don't let hips drop at any point", "2s pause + 3s eccentric = peak hamstring stimulus"] },
+          { name: "KB Bulgarian Split Squat (4s eccentric)", sets: 4, target: "8–10 each", rest: 90, notes: "12kg KB. 4s lowering. Most demanding single-leg work of programme.", muscles: "Quads · Glutes · Hamstrings", cues: ["Rear foot on bench, KB at chest", "Lower over 4 full seconds — complete control throughout", "Drop back knee straight down to floor", "Drive through front heel explosively to stand", "Significant glute DOMS expected after first session at this tempo"] },
+          { name: "Barbell Hip Thrust (slow + pause)", sets: 4, target: "12–15", rest: 90, notes: "3s up, 2s hold, 3s down. Maximum glute time under tension.", muscles: "Glutes · Hamstrings", cues: ["3 seconds to drive hips up — squeeze glutes throughout", "2 full second pause at top — maximum glute squeeze", "Lower over 3 seconds — 8 seconds per rep total", "Glutes deeply fatigued by rep 8 — that is the goal", "Chin tucked throughout — never let lower back arch"] },
+          { name: "Standing Calf Raise (4s eccentric)", sets: 3, target: "15–20", rest: 60, notes: "4s lowering. Peak calf time under tension. Go to failure on last set.", muscles: "Calves", cues: ["Maximum stretch at bottom, maximum squeeze at top", "Lower over 4 full seconds — count every second", "Don't bounce at bottom — dead stop before rising", "Push last set to failure — calves are resilient", "4s eccentric at full range is peak calf stimulus"] },
         ]},
-        { day: "Lower 1", type: "Quad Focus", exercises: [
-          { name: "Barbell Back Squat", sets: 5, target: "4–5", rest: 150, restType: "heavy", notes: "Heaviest squat. Add 5–10kg vs Phase 2. Full depth non-negotiable.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Set up meticulously — this is your heaviest squat", "Brace harder than you think necessary", "3 seconds down, no bouncing out of the hole", "Drive as if the floor is breaking apart", "Re-rack safely — step forward, don't reverse into pins"] },
-          { name: "Barbell Sumo Deadlift", sets: 5, target: "4–5", rest: 150, restType: "heavy", notes: "Heaviest sumo. Add 5–10kg vs Phase 2.", muscles: "Glutes · Inner thighs · Hamstrings · Back", cues: ["Wide stance, toes 45° — heavier but same technique", "Brace maximally before every rep", "Push knees aggressively out over toes", "Bar drags up inner legs — stay tight throughout", "Full reset between reps at this weight"] },
-          { name: "KB Romanian Deadlift (4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "12kg KBs. 4s lowering. Maximum hamstring TUT.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Hold two 12kg KBs — maximum range and load", "Lower over 4 full seconds — every degree of stretch", "Pause 1–2 seconds at bottom", "Drive up explosively — hip snap, glute squeeze", "4s eccentric RDL is peak hamstring developer with this kit"] },
-          { name: "KB Bulgarian Split Squat (4s eccentric)", sets: 4, target: "8–10 each", rest: 120, restType: "heavy", notes: "12kg at chest. 4s lowering. Most demanding single-leg work.", muscles: "Quads · Glutes · Hamstrings", cues: ["Rear foot on bench, KB at chest", "Lower over 4 full seconds — complete control", "Pause at bottom before driving up explosively", "This will be the hardest single-leg work you've done", "Significant DOMS expected in glutes after first session at this tempo"] },
-          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Peak calf volume. Go to failure on last set.", muscles: "Calves", cues: ["Maximum range — deepest stretch, highest rise", "4 full seconds down — the eccentric builds calf size", "Don't bounce at the bottom", "Push last set to failure — calves are resilient", "Twice weekly at this volume = genuine calf development"] },
+        { day: "Day 3", type: "Accessory — Shoulders, Arms", exercises: [
+          { name: "Barbell Overhead Press", sets: 4, target: "6–8", rest: 120, restType: "heavy", notes: "Heaviest OHP of programme. Strict — no leg drive. Peak shoulder strength.", muscles: "Shoulders · Triceps · Upper chest", cues: ["Heaviest OHP — glutes squeezed hard to stay strict", "Press close to face, full lockout at top", "Lower over 3 seconds", "This is your shoulder strength benchmark", "No leg drive — ever — on this movement"] },
+          { name: "DB Lateral Raise (4s eccentric)", sets: 5, target: "12–15", rest: 60, notes: "5kg. 4s down. Maximum side delt time under tension.", muscles: "Side deltoids", cues: ["Lean forward 10°, lead with elbows, push toward walls", "Lower over 4 full seconds — count every second", "At 4s eccentric, 5kg is genuinely hard by rep 12", "5 sets — peak side delt volume of programme", "No shrugging or compensation — strict throughout"] },
+          { name: "Ring Dips (weighted)", sets: 3, target: "5–8", rest: 90, notes: "Add weight this phase. Heaviest ring dip of programme.", muscles: "Triceps · Chest · Shoulders", cues: ["Add weight via KB between feet or weight belt", "Elbows tucked, forearms against straps", "Full range — upper arms parallel at the bottom", "Press to full lockout, hard squeeze at top", "Heaviest dips of the programme — treat them like a compound movement"] },
+          { name: "Barbell Curl (4s eccentric)", sets: 4, target: "8–10", rest: 90, notes: "Heaviest barbell curl. Explosive up, 4s down. Peak bicep stimulus.", muscles: "Biceps · Brachialis · Forearms", cues: ["Heaviest barbell curl of programme", "Curl explosively, hard squeeze at top", "Lower over 4 full seconds — elbows pinned throughout", "By rep 6–8 biceps should be intensely fatigued", "4s eccentrics are the most effective arm growth technique"] },
+          { name: "Incline DB Curl (4s eccentric)", sets: 3, target: "10–12", rest: 60, notes: "Bench at 45–60°. 4s lowering. Peak long head bicep stretch under load.", muscles: "Biceps (long head emphasis)", cues: ["Sit back on incline bench, arms hanging behind body", "Curl up without elbows drifting forward", "Lower over 4 full seconds — feel every degree of long head stretch", "4s eccentric incline curl is the peak bicep isolation in this programme", "By rep 8–10 the long head should be deeply fatigued"] },
+          { name: "Banded Tricep Pushdown", sets: 3, target: "15–20", rest: 60, notes: "Full lockout every rep. Flare out at bottom. Peak tricep endurance.", muscles: "Triceps", cues: ["Elbows pinned — they must not move", "Full lockout at bottom, flare out to catch long head", "Control the return over 2 seconds", "20 reps target — push to failure on last set", "Tricep pump at this rep range is a strong hypertrophy signal"] },
+          { name: "Band Face Pull", sets: 3, target: "20", rest: 60, notes: "Full 20 every set. Heaviest pressing phase — shoulder protection critical.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Full 20 reps — never cut short", "Pull toward forehead, show biceps at back of rep", "Heaviest OHP and dip phase — this matters most now", "Add an extra set if any shoulder discomfort during the week", "Consistency on this prevents most shoulder problems from heavy pressing"] },
         ]},
-        { day: "Lower 2", type: "Posterior Focus", exercises: [
-          { name: "Barbell Conventional Deadlift", sets: 5, target: "3–4", rest: 150, restType: "heavy", notes: "Heaviest conventional. Treat every rep as a max attempt.", muscles: "Hamstrings · Glutes · Back · Core", cues: ["Max brace — lats, abs, glutes all contracted before lifting", "First inch is hardest — drive through it", "Bar stays in contact with legs the whole way", "Full lockout — squeeze glutes, don't hyperextend", "This is peak posterior chain loading — take it seriously"] },
-          { name: "Barbell Back Squat (volume)", sets: 5, target: "6–8", rest: 90, notes: "10% lighter than Lower 1. Volume at heavier loads than Phase 2.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Still heavy but 10% below Lower 1 max", "Pause 1 second at bottom every rep", "Drive knees out on every rep — glute focus", "5 sets of 6–8 — push to 1 from failure", "Volume at this weight is what builds the legs"] },
-          { name: "KB Romanian Deadlift (4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "12kg KBs. 4s eccentric. Hamstrings twice weekly.", muscles: "Hamstrings · Glutes · Lower back", cues: ["4 full seconds down, 1–2 second pause at bottom", "Drive explosively up — hip snap", "Twice weekly at 4s eccentric = serious hamstring growth", "Each rep fresh — don't rush the hinge", "Push last set to 1 from failure"] },
-          { name: "KB Bulgarian Split Squat (4s eccentric)", sets: 4, target: "8–10 each", rest: 120, restType: "heavy", notes: "12kg. 4s lowering. Twice weekly for maximum development.", muscles: "Quads · Glutes · Hamstrings", cues: ["Same 4s eccentric as Lower 1", "Pause at bottom — explosive drive up", "Twice weekly split squats at this tempo = peak glute and quad development", "By set 4 you should be unable to do another rep — that's the stimulus", "Track reps per set — any gain week on week is progress"] },
-          { name: "Standing Calf Raise", sets: 4, target: "15–20", rest: 60, notes: "Twice weekly. Push last set to failure.", muscles: "Calves", cues: ["Full range as always — stretch and squeeze", "4 seconds down on every rep", "Calves twice weekly at full range drives genuine growth", "Don't shortchange the bottom stretch", "Last set to failure — calves are built to take it"] },
+        { day: "Day 4", type: "Full Body — Performance", exercises: [
+          { name: "Weighted Pull-Up", sets: 4, target: "3–5", rest: 150, restType: "heavy", notes: "Heaviest weighted pull-up of programme. Max effort. Lower with 2s control.", muscles: "Lats · Biceps · Rear delts", cues: ["Heaviest weighted pull-up — add weight vs Phase 2", "Explosive intent — maximum effort every rep", "Chest to bar — full range", "Lower with 2-second control — don't drop", "This is your pulling strength benchmark — track it"] },
+          { name: "Barbell SLDL (Deficit, 4s eccentric)", sets: 4, target: "8–10", rest: 120, restType: "heavy", notes: "Heaviest SLDL of programme. Same 4s eccentric. Maximum posterior chain loading.", muscles: "Hamstrings · Glutes · Lower back", cues: ["Heaviest deficit SLDL — push hips back toward wall", "4 seconds down, 1 second pause at maximum stretch", "Bar stays close to shins throughout", "Drive hips forward explosively at lockout", "Maximum posterior chain stimulus of the programme"] },
+          { name: "Ring Deficit Push-Up (4s eccentric)", sets: 4, target: "10–12", rest: 90, notes: "4s lowering. Chest past ring level. Peak chest stretch stimulus.", muscles: "Chest · Shoulders · Triceps · Stabilisers", cues: ["Lower chest past ring level over 4 full seconds", "Maximum depth — the deeper the stretch the more chest fibres recruited", "Press back to full lockout, RTO for 2s at top", "4s eccentric ring deficit push-up is the most demanding chest movement in the programme", "Go to failure on last set"] },
+          { name: "Barbell Back Squat", sets: 4, target: "12–15", rest: 90, notes: "Volume work at heavier load than Phase 2. Maintain tempo — quality over speed.", muscles: "Quads · Glutes · Hamstrings · Core", cues: ["Heavier than Phase 2 at the same rep range", "Maintain 3-1-1-0 tempo no matter how hard it gets", "Full depth every rep", "Last set to failure — leave nothing in the tank", "Volume squatting at this load is peak leg hypertrophy"] },
+          { name: "Band Face Pull", sets: 4, target: "20", rest: 60, notes: "Full 20 every set. 4 sets. Heaviest phase — maximum shoulder protection.", muscles: "Rear delts · Rotator cuff · Traps", cues: ["Full 20 reps every set — non-negotiable in Phase 3", "Pull toward forehead, show biceps at back of rep", "4 sets is the highest face pull volume of the week", "This is the most important shoulder health work in Phase 3", "Never skip — consistency across all 4 days is what prevents injury"] },
         ]},
       ]
     }
@@ -264,6 +259,7 @@ const mobilityPlan = {
 // ─── STORAGE HELPERS ──────────────────────────────────────────────────────────
 const SK = {
   strengthSet: (p, d, e, s) => `s_p${p}_d${d}_e${e}_s${s}`,
+  strengthPrev: (p, d, e, s) => `sp_p${p}_d${d}_e${e}_s${s}`,
   strengthHist: "strength_history_v2",
   mobilityHist: "mobility_history_v2",
 };
@@ -276,6 +272,41 @@ async function saveKey(key, val) {
 }
 
 // ─── TIMERS ───────────────────────────────────────────────────────────────────
+// ─── AUDIO ────────────────────────────────────────────────────────────────────
+function playBeep(freq = 880, duration = 0.12, vol = 0.4, type = "sine") {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+    osc.onended = () => ctx.close();
+  } catch(e) {}
+}
+
+function timerBeep(secs) {
+  if (secs === 10) {
+    // Single warning beep at 10s
+    playBeep(660, 0.15, 0.35);
+  } else if (secs === 3 || secs === 2) {
+    // Short beep for 3 and 2
+    playBeep(880, 0.1, 0.4);
+  } else if (secs === 1) {
+    // Slightly higher for 1
+    playBeep(1000, 0.1, 0.4);
+  } else if (secs === 0) {
+    // Double high tone on completion
+    playBeep(1320, 0.18, 0.5);
+    setTimeout(() => playBeep(1320, 0.25, 0.5), 200);
+  }
+}
+
 function useRestTimer() {
   const [secs, setSecs] = useState(0);
   const [running, setRunning] = useState(false);
@@ -284,7 +315,12 @@ function useRestTimer() {
   const start = useCallback((s) => {
     clearInterval(ref.current);
     setInitial(s); setSecs(s); setRunning(true);
-    ref.current = setInterval(() => setSecs(p => { if (p <= 1) { clearInterval(ref.current); setRunning(false); return 0; } return p - 1; }), 1000);
+    ref.current = setInterval(() => setSecs(p => {
+      const next = p <= 1 ? 0 : p - 1;
+      timerBeep(next);
+      if (next === 0) { clearInterval(ref.current); setRunning(false); }
+      return next;
+    }), 1000);
   }, []);
   const stop = useCallback(() => { clearInterval(ref.current); setRunning(false); setSecs(0); }, []);
   useEffect(() => () => clearInterval(ref.current), []);
@@ -300,14 +336,24 @@ function useHoldTimer() {
   const start = useCallback((s) => {
     clearInterval(ref.current);
     setInitial(s); setSecs(s); setRunning(true); setDone(false);
-    ref.current = setInterval(() => setSecs(p => { if (p <= 1) { clearInterval(ref.current); setRunning(false); setDone(true); return 0; } return p - 1; }), 1000);
+    ref.current = setInterval(() => setSecs(p => {
+      const next = p <= 1 ? 0 : p - 1;
+      timerBeep(next);
+      if (next === 0) { clearInterval(ref.current); setRunning(false); setDone(true); }
+      return next;
+    }), 1000);
   }, []);
   const pause = useCallback(() => { clearInterval(ref.current); setRunning(false); }, []);
   const resume = useCallback((s) => {
     const rem = s !== undefined ? s : secs;
     if (rem > 0) {
       setSecs(rem); setRunning(true);
-      ref.current = setInterval(() => setSecs(p => { if (p <= 1) { clearInterval(ref.current); setRunning(false); setDone(true); return 0; } return p - 1; }), 1000);
+      ref.current = setInterval(() => setSecs(p => {
+        const next = p <= 1 ? 0 : p - 1;
+        timerBeep(next);
+        if (next === 0) { clearInterval(ref.current); setRunning(false); setDone(true); }
+        return next;
+      }), 1000);
     }
   }, [secs]);
   const reset = useCallback((s) => { clearInterval(ref.current); setRunning(false); setDone(false); setSecs(s || initial); }, [initial]);
@@ -518,42 +564,66 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
   const color = ph.color;
   const rest = useRestTimer();
   const [logs, setLogs] = useState({});
+  const [prevLogs, setPrevLogs] = useState({});
   const [finished, setFinished] = useState(false);
-  const [detailItem, setDetailItem] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Restore any previously saved set logs for this workout on mount
+  // Restore current session logs and previous session logs on mount
   useEffect(() => {
     const restore = async () => {
       const restored = {};
+      const prev = {};
       for (let ei = 0; ei < day.exercises.length; ei++) {
         for (let si = 0; si < day.exercises[ei].sets; si++) {
           const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
+          const prevKey = SK.strengthPrev(phaseIdx, dayIdx, ei, si);
           try {
             const r = await window.storage.get(key, false);
-            if (r?.value) restored[key] = Number(r.value);
+            if (r?.value) {
+              try { restored[key] = JSON.parse(r.value); }
+              catch { restored[key] = { reps: Number(r.value), weight: null }; }
+            }
+          } catch {}
+          try {
+            const p = await window.storage.get(prevKey, false);
+            if (p?.value) {
+              try { prev[prevKey] = JSON.parse(p.value); }
+              catch { prev[prevKey] = { reps: Number(p.value), weight: null }; }
+            }
           } catch {}
         }
       }
       setLogs(restored);
+      setPrevLogs(prev);
       setLoaded(true);
     };
     restore();
   }, [phaseIdx, dayIdx]);
 
   const totalSets = day.exercises.reduce((a, e) => a + e.sets, 0);
-  const doneSets = Object.keys(logs).length;
+  const doneSets = Object.values(logs).filter(v => v && v.reps != null).length;
   const pct = totalSets > 0 ? (doneSets / totalSets) * 100 : 0;
 
-  const handleSave = (ei, si, reps) => {
+  const handleSave = (ei, si, data) => {
     const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
-    setLogs(prev => ({ ...prev, [key]: reps }));
-    try { window.storage.set(key, String(reps), false); } catch {}
+    setLogs(prev => ({ ...prev, [key]: data }));
+    try { window.storage.set(key, JSON.stringify(data), false); } catch {}
     const ex = day.exercises[ei];
     rest.start(ex.restType === "heavy" ? 150 : ex.rest || 90);
   };
 
   const handleFinish = async () => {
+    // Save current logs as previous session before clearing
+    for (let ei = 0; ei < day.exercises.length; ei++) {
+      for (let si = 0; si < day.exercises[ei].sets; si++) {
+        const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
+        const prevKey = SK.strengthPrev(phaseIdx, dayIdx, ei, si);
+        const val = logs[key];
+        if (val) {
+          try { await window.storage.set(prevKey, JSON.stringify(val), false); } catch {}
+        }
+      }
+    }
     const prev = await loadKey(SK.strengthHist) || [];
     const entry = {
       type: "strength", date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }),
@@ -598,37 +668,8 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
       </div>
 
       {day.exercises.map((ex, ei) => (
-        <Card key={ei} style={{ marginBottom: 12 }} color={color}>
-          <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-              <span style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{ex.name}</span>
-              <Mono style={{ fontSize: 11, color, flexShrink: 0 }}>{ex.sets}×{ex.target}</Mono>
-            </div>
-            <div style={{ fontSize: 12, color: D.muted, marginTop: 5, lineHeight: 1.5 }}>{ex.notes}</div>
-            <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: D.faint, borderRadius: 4, padding: "2px 8px" }}>
-                <Mono style={{ fontSize: 9, color: D.muted }}>
-                  ⏱ {ex.restType === "heavy" ? "2m 30s rest" : "90s rest"}
-                </Mono>
-              </div>
-              {ex.cues && (
-                <button onClick={() => setDetailItem(ex)} style={{ background: "transparent", border: `1px solid ${color}55`, borderRadius: 4, padding: "2px 10px", cursor: "pointer", fontFamily: D.mono, fontSize: 9, color, letterSpacing: 1 }}>
-                  How to →
-                </button>
-              )}
-            </div>
-          </div>
-          <div style={{ padding: "12px 15px", display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {Array.from({ length: ex.sets }, (_, si) => {
-              const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
-              const saved = logs[key];
-              return (
-                <SetBox key={si} label={`Set ${si + 1}`} target={ex.target} color={color}
-                  saved={saved} onSave={r => handleSave(ei, si, r)} />
-              );
-            })}
-          </div>
-        </Card>
+        <FlipCard key={ei} ex={ex} color={color} ei={ei} phaseIdx={phaseIdx} dayIdx={dayIdx}
+          logs={logs} prevLogs={prevLogs} onSave={(si, r) => handleSave(ei, si, r)} />
       ))}
 
       {/* Complete button — always visible, shows progress if not all sets done */}
@@ -650,22 +691,191 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
       </div>
 
       <RestOverlay secs={rest.secs} running={rest.running} progress={rest.progress} color={color} onSkip={rest.stop} />
-      <ExerciseDetailModal item={detailItem} color={color} onClose={() => setDetailItem(null)} />
     </div>
   );
 }
 
-function SetBox({ label, target, color, saved, onSave }) {
-  const [val, setVal] = useState(saved != null ? String(saved) : "");
-  const done = val !== "";
+// ─── FLIP CARD ────────────────────────────────────────────────────────────────
+function FlipCard({ ex, color, ei, phaseIdx, dayIdx, logs, prevLogs, onSave }) {
+  const [flipped, setFlipped] = useState(false);
+
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-      <Mono style={{ fontSize: 9, color: D.muted, minWidth: 30 }}>{label}</Mono>
-      <input type="number" min={0} max={99} value={val} placeholder="—"
-        onChange={e => setVal(e.target.value)}
-        onBlur={() => { if (val !== "") onSave(Number(val)); }}
-        style={{ width: 44, background: done ? "#2a1f08" : D.surface2, border: `1px solid ${done ? color + "88" : D.border}`, color: done ? color : D.muted, borderRadius: 5, padding: "5px 4px", fontFamily: D.mono, fontSize: 14, textAlign: "center", outline: "none" }} />
-      <Mono style={{ fontSize: 9, color: D.faint }}>/{target}</Mono>
+    <div style={{ marginBottom: 12, perspective: 1000 }}>
+      <div style={{
+        position: "relative", transition: "transform 0.45s cubic-bezier(.4,0,.2,1)",
+        transformStyle: "preserve-3d",
+        transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        minHeight: 160,
+      }}>
+
+        {/* ── FRONT FACE ── */}
+        <div style={{
+          backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
+          position: flipped ? "absolute" : "relative", inset: 0,
+          background: D.surface, border: `1px solid ${D.border}`,
+          borderTop: `2px solid ${color}`, borderRadius: 12, overflow: "hidden",
+        }}>
+          <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              {/* Tappable title */}
+              <button onClick={() => setFlipped(true)} style={{
+                background: "none", border: "none", padding: 0, cursor: "pointer",
+                textAlign: "left", flex: 1,
+              }}>
+                <span style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: D.text, textDecoration: "underline", textDecorationColor: color + "66", textUnderlineOffset: 3 }}>
+                  {ex.name}
+                </span>
+                {ex.cues && (
+                  <Mono style={{ fontSize: 8, color, display: "block", marginTop: 3, letterSpacing: 1 }}>tap for cues ↓</Mono>
+                )}
+              </button>
+              <Mono style={{ fontSize: 11, color, flexShrink: 0 }}>{ex.sets}×{ex.target}</Mono>
+            </div>
+            <div style={{ fontSize: 12, color: D.muted, marginTop: 5, lineHeight: 1.5 }}>{ex.notes}</div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: D.faint, borderRadius: 4, padding: "2px 8px" }}>
+                <Mono style={{ fontSize: 9, color: D.muted }}>
+                  ⏱ {ex.restType === "heavy" ? "2m 30s rest" : "90s rest"}
+                </Mono>
+              </div>
+            </div>
+          </div>
+          <div style={{ padding: "12px 15px", display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {Array.from({ length: ex.sets }, (_, si) => {
+              const key = SK.strengthSet(phaseIdx, dayIdx, ei, si);
+              const prevKey = SK.strengthPrev(phaseIdx, dayIdx, ei, si);
+              return (
+                <SetBox key={si} label={`Set ${si + 1}`} target={ex.target} color={color}
+                  saved={logs[key]} lastSaved={prevLogs[prevKey] || null}
+                  onSave={r => onSave(si, r)} />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── BACK FACE ── */}
+        <div style={{
+          backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
+          transform: "rotateY(180deg)",
+          position: "absolute", inset: 0,
+          background: D.surface2, border: `2px solid ${color}`,
+          borderRadius: 12, overflow: "hidden",
+        }}>
+          <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: D.text }}>{ex.name}</div>
+              <Mono style={{ fontSize: 9, color, letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 3 }}>{ex.muscles}</Mono>
+            </div>
+            <button onClick={() => setFlipped(false)} style={{
+              background: D.faint, border: "none", borderRadius: 8,
+              width: 30, height: 30, cursor: "pointer", fontSize: 14, color: D.muted,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>✕</button>
+          </div>
+          <div style={{ padding: "14px 15px", overflowY: "auto", maxHeight: 320 }}>
+            {ex.cues ? ex.cues.map((cue, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: "50%", background: color,
+                  color: "#fff", fontSize: 10, fontWeight: 700, fontFamily: D.mono,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0, marginTop: 1,
+                }}>{i + 1}</div>
+                <div style={{ fontSize: 13, color: D.text, lineHeight: 1.6, paddingTop: 2 }}>{cue}</div>
+              </div>
+            )) : (
+              <div style={{ fontSize: 13, color: D.muted }}>{ex.notes}</div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function SetBox({ label, target, color, saved, lastSaved, onSave }) {
+  const [reps, setReps] = useState(saved?.reps != null ? String(saved.reps) : "");
+  const [weight, setWeight] = useState(saved?.weight != null ? String(saved.weight) : "");
+  const done = reps !== "";
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  const [swiped, setSwiped] = useState(false);
+
+  const commit = (newReps, newWeight) => {
+    if (newReps !== "") onSave({ reps: Number(newReps), weight: newWeight !== "" ? Number(newWeight) : null });
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+    // Swipe right: at least 50px horizontal, less than 40px vertical drift
+    if (dx > 50 && dy < 40 && !done) {
+      const fillReps = lastSaved?.reps != null ? String(lastSaved.reps) : "";
+      const fillWeight = lastSaved?.weight != null ? String(lastSaved.weight) : "";
+      if (fillReps !== "") {
+        setReps(fillReps);
+        setWeight(fillWeight);
+        setSwiped(true);
+        onSave({ reps: Number(fillReps), weight: fillWeight !== "" ? Number(fillWeight) : null });
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  return (
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        background: done ? "#1e1a0a" : D.surface2,
+        border: `1px solid ${done ? color + "55" : D.border}`,
+        borderRadius: 8, padding: "8px 10px", minWidth: 90,
+        transition: "background 0.2s, border-color 0.2s",
+        position: "relative", overflow: "hidden",
+      }}>
+      {/* Swipe hint — only shown if lastSaved exists and not yet done */}
+      {!done && lastSaved?.reps != null && (
+        <div style={{ position: "absolute", top: 3, right: 4 }}>
+          <Mono style={{ fontSize: 6, color: D.muted, letterSpacing: 0.5 }}>swipe →</Mono>
+        </div>
+      )}
+      <Mono style={{ fontSize: 8, color: done ? color : D.muted, display: "block", marginBottom: 6, letterSpacing: 1 }}>{label}</Mono>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <Mono style={{ fontSize: 7, color: D.muted, letterSpacing: 1 }}>KG</Mono>
+          <input type="number" min={0} max={999} step={0.5} value={weight} placeholder="—"
+            onChange={e => setWeight(e.target.value)}
+            onBlur={() => commit(reps, weight)}
+            style={{ width: 42, background: "transparent", border: `1px solid ${D.border}`, color: D.text, borderRadius: 4, padding: "4px 3px", fontFamily: D.mono, fontSize: 13, textAlign: "center", outline: "none" }} />
+        </div>
+        <Mono style={{ fontSize: 10, color: D.border }}>×</Mono>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <Mono style={{ fontSize: 7, color: D.muted, letterSpacing: 1 }}>REPS</Mono>
+          <input type="number" min={0} max={99} value={reps} placeholder="—"
+            onChange={e => setReps(e.target.value)}
+            onBlur={() => commit(reps, weight)}
+            style={{ width: 42, background: "transparent", border: `1px solid ${done ? color + "88" : D.border}`, color: done ? color : D.text, borderRadius: 4, padding: "4px 3px", fontFamily: D.mono, fontSize: 13, textAlign: "center", outline: "none" }} />
+        </div>
+      </div>
+      {!done && lastSaved?.reps != null && (
+        <Mono style={{ fontSize: 7, color: D.muted, display: "block", marginTop: 5, textAlign: "center" }}>
+          last: {lastSaved.weight != null ? `${lastSaved.weight}kg × ` : ""}{lastSaved.reps}
+        </Mono>
+      )}
+      {!done && lastSaved == null && (
+        <Mono style={{ fontSize: 7, color: D.muted, display: "block", marginTop: 5, textAlign: "center" }}>target: {target}</Mono>
+      )}
+      {done && weight !== "" && (
+        <Mono style={{ fontSize: 7, color, display: "block", marginTop: 5, textAlign: "center" }}>{weight}kg × {reps}</Mono>
+      )}
     </div>
   );
 }
@@ -822,14 +1032,8 @@ function MobilitySession({ session, onBack, onComplete }) {
 // ─── STRENGTH PLAN TAB ────────────────────────────────────────────────────────
 function StrengthTab({ onStartWorkout }) {
   const [activePhase, setActivePhase] = useState(0);
-  const [weekA, setWeekA] = useState(true);
   const [detailItem, setDetailItem] = useState(null);
   const ph = strengthPlan.phases[activePhase];
-  // Week A: days 0,2,1 (Upper1, Upper2, Lower1) | Week B: days 3,0,2 (Lower2, Upper1, Lower1)
-  const weekDays = weekA ? [0, 2, 1] : [3, 0, 2];
-  const weekLabels = weekA
-    ? ["Session 1 — Upper 1", "Session 2 — Lower 1", "Session 3 — Upper 2"]
-    : ["Session 1 — Lower 2", "Session 2 — Upper 1", "Session 3 — Lower 1"];
 
   return (
     <div>
@@ -848,69 +1052,61 @@ function StrengthTab({ onStartWorkout }) {
         ))}
       </div>
 
-      {/* Week A/B toggle */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        {[true, false].map(isA => (
-          <button key={String(isA)} onClick={() => setWeekA(isA)} style={{
-            flex: 1, background: weekA === isA ? ph.color : D.surface2,
-            color: weekA === isA ? "#fff" : D.muted,
-            border: `1px solid ${weekA === isA ? ph.color : D.border}`,
-            borderRadius: 8, padding: "10px 8px", cursor: "pointer", fontFamily: D.font,
-          }}>
-            <Mono style={{ fontSize: 9, letterSpacing: 2, textTransform: "uppercase", display: "block", opacity: 0.8 }}>{isA ? "Week A" : "Week B"}</Mono>
-            <div style={{ fontSize: 11, marginTop: 3, fontWeight: 600 }}>{isA ? "Upper · Lower · Upper" : "Lower · Upper · Lower"}</div>
-          </button>
-        ))}
-      </div>
-
       <div style={{ background: D.surface, borderLeft: `3px solid ${ph.color}`, border: `1px solid ${ph.color}22`, borderRadius: 8, padding: "11px 14px", marginBottom: 16 }}>
         <Mono style={{ color: ph.color, fontSize: 9, textTransform: "uppercase", letterSpacing: 3 }}>Goal · </Mono>
         <span style={{ fontSize: 12, color: D.muted, lineHeight: 1.6 }}>{ph.goal}</span>
       </div>
 
-      {weekDays.map((di, sessionIdx) => {
-        const d = ph.days[di];
-        return (
-          <Card key={di} style={{ marginBottom: 12 }}>
-            <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                <span style={{ fontWeight: 700, fontSize: 15 }}>{weekLabels[sessionIdx]}</span>
-              </div>
-              <Mono style={{ fontSize: 10, color: ph.color }}>{d.type}</Mono>
+      {/* Schedule hint */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, marginBottom: 16 }}>
+        {["Mon · Torso", "Tue · Legs", "Thu · Accessory", "Sat · Full Body"].map((label, i) => (
+          <div key={i} style={{ background: D.surface2, border: `1px solid ${ph.color}33`, borderRadius: 7, padding: "7px 4px", textAlign: "center" }}>
+            <Mono style={{ fontSize: 8, color: ph.color, display: "block", letterSpacing: 1 }}>{label.split(" · ")[0]}</Mono>
+            <div style={{ fontSize: 9, fontWeight: 700, color: D.text, marginTop: 2 }}>{label.split(" · ")[1]}</div>
+          </div>
+        ))}
+      </div>
+
+      {ph.days.map((d, di) => (
+        <Card key={di} style={{ marginBottom: 12 }}>
+          <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+              <span style={{ fontWeight: 700, fontSize: 15 }}>{d.day}</span>
             </div>
-            <div style={{ padding: "8px 15px" }}>
-              {d.exercises.map((ex, ei) => (
-                <div key={ei} onClick={() => setDetailItem(ex)} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: ei < d.exercises.length - 1 ? `1px solid ${D.border}` : "none", alignItems: "center", cursor: "pointer" }}>
-                  <div>
-                    <span style={{ fontSize: 12 }}>{ex.name}</span>
-                    <Mono style={{ fontSize: 9, color: D.muted, marginLeft: 6 }}>
-                      {ex.restType === "heavy" ? "⏱2m30s" : "⏱90s"}
-                    </Mono>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Mono style={{ fontSize: 10, color: ph.color }}>{ex.sets}×{ex.target}</Mono>
-                    <span style={{ fontSize: 12, color: D.muted }}>›</span>
-                  </div>
+            <Mono style={{ fontSize: 10, color: ph.color }}>{d.type}</Mono>
+          </div>
+          <div style={{ padding: "8px 15px" }}>
+            {d.exercises.map((ex, ei) => (
+              <div key={ei} onClick={() => setDetailItem(ex)} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: ei < d.exercises.length - 1 ? `1px solid ${D.border}` : "none", alignItems: "center", cursor: "pointer" }}>
+                <div>
+                  <span style={{ fontSize: 12 }}>{ex.name}</span>
+                  <Mono style={{ fontSize: 9, color: D.muted, marginLeft: 6 }}>
+                    {ex.restType === "heavy" ? "⏱2m30s" : "⏱90s"}
+                  </Mono>
                 </div>
-              ))}
-            </div>
-            <div style={{ padding: "11px 15px", borderTop: `1px solid ${D.border}` }}>
-              <button onClick={() => onStartWorkout(activePhase, di)} style={{ width: "100%", background: ph.color, color: "#fff", border: "none", borderRadius: 7, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: D.font }}>
-                Start Workout →
-              </button>
-            </div>
-          </Card>
-        );
-      })}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Mono style={{ fontSize: 10, color: ph.color }}>{ex.sets}×{ex.target}</Mono>
+                  <span style={{ fontSize: 12, color: D.muted }}>›</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "11px 15px", borderTop: `1px solid ${D.border}` }}>
+            <button onClick={() => onStartWorkout(activePhase, di)} style={{ width: "100%", background: ph.color, color: "#fff", border: "none", borderRadius: 7, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: D.font }}>
+              Start Workout →
+            </button>
+          </div>
+        </Card>
+      ))}
 
       <ExerciseDetailModal item={detailItem} color={ph.color} onClose={() => setDetailItem(null)} />
 
       <div style={{ marginTop: 16 }}>
-        <Label style={{ marginBottom: 10 }}>Split Pattern</Label>
+        <Label style={{ marginBottom: 10 }}>Weekly Volume Targets</Label>
         <Card>
-          {[["Week A","Upper 1 → Lower 1 → Upper 2"],["Week B","Lower 2 → Upper 1 → Lower 1"],["Frequency","Each muscle trained ~1.5× per week"],["Alternates","Swap weeks each time — infinite loop"]].map(([w,r],i,arr) => (
+          {[["Chest","~15 sets — Bench (5) + Incline (3) + Fly (3) + Ring Push-Up (3) + indirect"],["Back","~15 sets — Row (4) + Deadlift (4) + Pull-Up (4) + Ring Row (3)"],["Biceps","~16 sets — Arms: BB (4) + DB (3) + Hammer (3) · Pull: BB (3) + Hammer (3)"],["Triceps","~15 sets — Push: Skull (4) · Arms: Skull (4) + OH Ext (3) + CG Bench (3) + indirect"],["Glutes","~17 sets — Pause Squat (5) + Hip Thrust (4) + Rev Lunge (3) + SL RDL (3) + Step-Up (3)"],["Quads","~14 sets — Pause Squat (5) + Rev Lunge (3) + Step-Up (3) + indirect"],["Shoulders","~15 sets — OHP (4) + DB Press (3) + Lateral Raise (4+3)"],["Calves","6 sets — Legs (3) + Arms (3)"]].map(([w,r],i,arr) => (
             <div key={i} style={{ display: "flex", gap: 12, padding: "11px 15px", borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : "none" }}>
-              <Mono style={{ fontSize: 9, color: D.amber, flexShrink: 0, marginTop: 2 }}>{w}</Mono>
+              <Mono style={{ fontSize: 9, color: D.amber, flexShrink: 0, marginTop: 2, minWidth: 60 }}>{w}</Mono>
               <span style={{ fontSize: 12, color: D.muted, lineHeight: 1.5 }}>{r}</span>
             </div>
           ))}
@@ -1143,13 +1339,13 @@ function HomeTab({ sHistory, mHistory, onGoStrength, onGoMobility }) {
       <Label style={{ marginBottom: 10 }}>This Week's Plan</Label>
       <Card style={{ marginBottom: 22 }}>
         {[
-          { day: "Mon", strength: "Upper 1", mobility: "Hip & Groin", sColor: D.amber, mColor: D.tkdRed },
-          { day: "Tue", strength: "Lower 1", mobility: "Hamstrings", sColor: D.blue, mColor: D.teal },
+          { day: "Mon", strength: "Torso", mobility: "Hip & Groin", sColor: D.amber, mColor: D.tkdRed },
+          { day: "Tue", strength: "Legs", mobility: "Hamstrings", sColor: D.red, mColor: D.teal },
           { day: "Wed", strength: "Rest", mobility: "Kick Mobility", sColor: D.muted, mColor: "#059669" },
-          { day: "Thu", strength: "Upper 2", mobility: "Hip & Groin", sColor: D.amber, mColor: D.tkdRed },
+          { day: "Thu", strength: "Accessory", mobility: "Hip & Groin", sColor: D.blue, mColor: D.tkdRed },
           { day: "Fri", strength: "Rest", mobility: "Hamstrings", sColor: D.muted, mColor: D.teal },
-          { day: "Sat", strength: "Lower 2", mobility: "Kick Mobility", sColor: D.blue, mColor: "#059669" },
-          { day: "Sun", strength: "Rest", mobility: "Rest / Morning", sColor: D.muted, mColor: D.gold },
+          { day: "Sat", strength: "Full Body", mobility: "Kick Mobility", sColor: D.purple, mColor: "#059669" },
+          { day: "Sun", strength: "Rest", mobility: "Morning", sColor: D.muted, mColor: D.gold },
         ].map((d, i, arr) => (
           <div key={i} style={{ display: "grid", gridTemplateColumns: "36px 1fr 1fr", gap: 8, padding: "9px 15px", borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : "none", alignItems: "center" }}>
             <Mono style={{ fontSize: 9, color: D.muted, textTransform: "uppercase" }}>{d.day}</Mono>
@@ -1325,9 +1521,9 @@ function App() {
     ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
   </script>
   <script>
-    if ('serviceWorker' in navigator) {
-      const swBlob = new Blob(["\nconst CACHE = 'traininghub-v2';\nconst ASSETS = [\n  'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap',\n  'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',\n  'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'\n];\nself.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))); self.skipWaiting(); });\nself.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });\nself.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(cached => { if (cached) return cached; return fetch(e.request).then(res => { if (res && res.status === 200 && e.request.method === 'GET') { const clone = res.clone(); caches.open(CACHE).then(c => c.put(e.request, clone)); } return res; }).catch(() => cached); })); });\n"], { type: 'application/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(function() {});
+    if('serviceWorker'in navigator){
+      const b=new Blob(["const CACHE='traininghub-v9';const ASSETS=['https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap','https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(cached=>{if(cached)return cached;return fetch(e.request).then(res=>{if(res&&res.status===200&&e.request.method==='GET'){const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));}return res;}).catch(()=>cached);}));});"],{type:'application/javascript'});
+      navigator.serviceWorker.register(URL.createObjectURL(b)).catch(function(){});
     }
   </script>
 </body>
