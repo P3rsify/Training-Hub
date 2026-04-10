@@ -21,6 +21,7 @@
     input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
     input[type=number]{-moz-appearance:textfield;}
     ::-webkit-scrollbar{width:4px;};::-webkit-scrollbar-track{background:#111318;};::-webkit-scrollbar-thumb{background:#2e3140;border-radius:2px;}
+    @keyframes flipIn { from { opacity: 0; transform: scaleX(0.82); } to { opacity: 1; transform: scaleX(1); } }
   </style>
 </head>
 <body>
@@ -698,27 +699,30 @@ function StrengthWorkout({ phaseIdx, dayIdx, onBack, onComplete }) {
 // ─── FLIP CARD ────────────────────────────────────────────────────────────────
 function FlipCard({ ex, color, ei, phaseIdx, dayIdx, logs, prevLogs, onSave }) {
   const [flipped, setFlipped] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+
+  const flipTo = (val) => {
+    setFlipped(val);
+    setAnimKey(k => k + 1);
+  };
+
+  const cardAnim = {
+    animation: "flipIn 0.32s ease",
+  };
 
   return (
-    <div style={{ marginBottom: 12, perspective: 1000 }}>
-      <div style={{
-        position: "relative", transition: "transform 0.45s cubic-bezier(.4,0,.2,1)",
-        transformStyle: "preserve-3d",
-        transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-        minHeight: 160,
-      }}>
-
-        {/* ── FRONT FACE ── */}
-        <div style={{
-          backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-          position: flipped ? "absolute" : "relative", inset: 0,
+    <div style={{ marginBottom: 12 }}>
+      <style>{`@keyframes flipIn { from { opacity: 0; transform: scaleX(0.82); } to { opacity: 1; transform: scaleX(1); } }`}</style>
+      {!flipped ? (
+        /* ── FRONT FACE ── */
+        <div key={`front-${animKey}`} style={{
+          ...cardAnim,
           background: D.surface, border: `1px solid ${D.border}`,
           borderTop: `2px solid ${color}`, borderRadius: 12, overflow: "hidden",
         }}>
           <div style={{ padding: "13px 15px", borderBottom: `1px solid ${D.border}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-              {/* Tappable title */}
-              <button onClick={() => setFlipped(true)} style={{
+              <button onClick={() => flipTo(true)} style={{
                 background: "none", border: "none", padding: 0, cursor: "pointer",
                 textAlign: "left", flex: 1,
               }}>
@@ -752,12 +756,10 @@ function FlipCard({ ex, color, ei, phaseIdx, dayIdx, logs, prevLogs, onSave }) {
             })}
           </div>
         </div>
-
-        {/* ── BACK FACE ── */}
-        <div style={{
-          backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-          transform: "rotateY(180deg)",
-          position: "absolute", inset: 0,
+      ) : (
+        /* ── BACK FACE ── */
+        <div key={`back-${animKey}`} style={{
+          ...cardAnim,
           background: D.surface2, border: `2px solid ${color}`,
           borderRadius: 12, overflow: "hidden",
         }}>
@@ -766,30 +768,32 @@ function FlipCard({ ex, color, ei, phaseIdx, dayIdx, logs, prevLogs, onSave }) {
               <div style={{ fontWeight: 700, fontSize: 14, color: D.text }}>{ex.name}</div>
               <Mono style={{ fontSize: 9, color, letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 3 }}>{ex.muscles}</Mono>
             </div>
-            <button onClick={() => setFlipped(false)} style={{
+            <button onClick={() => flipTo(false)} style={{
               background: D.faint, border: "none", borderRadius: 8,
               width: 30, height: 30, cursor: "pointer", fontSize: 14, color: D.muted,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>✕</button>
           </div>
-          <div style={{ padding: "14px 15px", overflowY: "auto", maxHeight: 320 }}>
-            {ex.cues ? ex.cues.map((cue, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+          <div style={{ padding: "14px 15px" }}>
+            {(ex.cues || [ex.notes]).map((cue, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "flex-start" }}>
                 <div style={{
-                  width: 22, height: 22, borderRadius: "50%", background: color,
-                  color: "#fff", fontSize: 10, fontWeight: 700, fontFamily: D.mono,
+                  width: 24, height: 24, borderRadius: "50%", background: color,
+                  color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: D.mono,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   flexShrink: 0, marginTop: 1,
                 }}>{i + 1}</div>
-                <div style={{ fontSize: 13, color: D.text, lineHeight: 1.6, paddingTop: 2 }}>{cue}</div>
+                <div style={{ fontSize: 14, color: D.text, lineHeight: 1.65, paddingTop: 2 }}>{cue}</div>
               </div>
-            )) : (
-              <div style={{ fontSize: 13, color: D.muted }}>{ex.notes}</div>
-            )}
+            ))}
+            <button onClick={() => flipTo(false)} style={{
+              marginTop: 6, width: "100%", background: color, color: "#fff",
+              border: "none", borderRadius: 8, padding: "11px", fontWeight: 700,
+              fontSize: 13, cursor: "pointer", fontFamily: D.font,
+            }}>← Back to sets</button>
           </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }
@@ -1522,7 +1526,7 @@ function App() {
   </script>
   <script>
     if('serviceWorker'in navigator){
-      const b=new Blob(["const CACHE='traininghub-v9';const ASSETS=['https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap','https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(cached=>{if(cached)return cached;return fetch(e.request).then(res=>{if(res&&res.status===200&&e.request.method==='GET'){const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));}return res;}).catch(()=>cached);}));});"],{type:'application/javascript'});
+      const b=new Blob(["const CACHE='traininghub-v11';const ASSETS=['https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap','https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(cached=>{if(cached)return cached;return fetch(e.request).then(res=>{if(res&&res.status===200&&e.request.method==='GET'){const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));}return res;}).catch(()=>cached);}));});"],{type:'application/javascript'});
       navigator.serviceWorker.register(URL.createObjectURL(b)).catch(function(){});
     }
   </script>
